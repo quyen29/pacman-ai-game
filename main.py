@@ -2,8 +2,15 @@ import pygame
 import copy
 import math
 
-from game.board import boards  # boards là mảng 2D chứa các số từ 0–9 như bạn mô tả
+from characters.pacman import Pacman
+from characters.ghosts.blinky import Blinky
+from characters.ghosts.pinky import Pinky
+from characters.ghosts.inky import Inky
+from characters.ghosts.clyde import Clyde
 
+from game.board import boards
+from game.state import State
+from game.logic import move_character, check_collision, eat_dot
 pygame.init()
 
 # Kích thước cửa sổ
@@ -21,30 +28,16 @@ font = pygame.font.Font('freesansbold.ttf', 20)
 level = copy.deepcopy(boards)
 color = 'blue'
 PI = math.pi
-
-pacman_x = 14 * TILE_SIZE
-pacman_y= 27 * TILE_SIZE
-direction = 0
-
-blinky_x = 14 * TILE_SIZE
-blinky_y = 15 * TILE_SIZE
-blinky_direction = 0
-
-pinky_x = 14 * TILE_SIZE
-pinky_y = 18 * TILE_SIZE
-pinky_direction = 0
-
-inky_x = 12 * TILE_SIZE
-inky_y = 18 * TILE_SIZE
-inky_direction = 0
-
-clyde_x = 16 * TILE_SIZE
-clyde_y = 18 * TILE_SIZE
-clyde_direction = 0
-
-
 counter = 0
 flicker = False
+
+# Khởi tạo
+game_state = State()
+pacman = Pacman(game_state.pacman_pos[0], game_state.pacman_pos[1])
+blinky = Blinky(game_state.ghosts_pos["blinky"][0], game_state.ghosts_pos["blinky"][1])
+pinky = Pinky(game_state.ghosts_pos["pinky"][0], game_state.ghosts_pos["pinky"][1])
+inky = Inky(game_state.ghosts_pos["inky"][0], game_state.ghosts_pos["inky"][1])
+clyde = Clyde(game_state.ghosts_pos["clyde"][0], game_state.ghosts_pos["clyde"][1])
 
 
 pacman_images = []
@@ -85,21 +78,22 @@ def draw_board():
                 pygame.draw.line(screen, 'white', (x, y + TILE_SIZE // 2), (x + TILE_SIZE, y + TILE_SIZE // 2), 3)
 
 def draw_pacman():
+    screen.blit(pacman.images[counter // 5], (pacman.x, pacman.y))
     # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
-    if direction == 0:
-        screen.blit(pacman_images[counter // 5], (pacman_x, pacman_y))
-    elif direction == 1:
-        screen.blit(pygame.transform.flip(pacman_images[counter // 5], True, False), (pacman_x, pacman_y))
-    elif direction == 2:
-        screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 90), (pacman_x, pacman_y))
-    elif direction == 3:
-        screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 270), (pacman_x, pacman_y))
+    # if direction == 0:
+    #     screen.blit(pacman_images[counter // 5], (pacman.x, pacman.y))
+    # elif direction == 1:
+    #     screen.blit(pygame.transform.flip(pacman_images[counter // 5], True, False), (pacman.x, pacman.y))
+    # elif direction == 2:
+    #     screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 90), (pacman.x, pacman.y))
+    # elif direction == 3:
+    #     screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 270), (pacman.x, pacman.y))
 
 def draw_ghosts():
-    screen.blit(blinky_img, (blinky_x, blinky_y))
-    screen.blit(pinky_img, (pinky_x, pinky_y))
-    screen.blit(inky_img, (inky_x, inky_y))
-    screen.blit(clyde_img, (clyde_x, clyde_y))
+    screen.blit(blinky.image, (blinky.x, blinky.y))
+    screen.blit(pinky.image, (pinky.x, pinky.y))
+    screen.blit(inky.image, (inky.x, inky.y))
+    screen.blit(clyde.image, (clyde.x, clyde.y))
 
 def main():
     global counter
@@ -119,8 +113,8 @@ def main():
         draw_board()
         draw_pacman()
         draw_ghosts()
-        center_x = pacman_x + 15
-        center_y = pacman_y+ 15
+
+        blinky.move((pacman.x, pacman.y), level)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
