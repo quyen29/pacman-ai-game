@@ -6,17 +6,18 @@ from game.state import GameState
 import main
 
 SCARED_TIME = 40
+BONUS_TIME = 40
 TIME_PENALTY = 1
 
 class ClassicGameRules:
     def __init__(self, timeout = 30):
         self.timeout = timeout  #Thời gian tối đa để agent đưa ra quyết định, đơn vị là giây
 
-    def newGame(self, layout, pacmanAgent, ghostAgents, quiet = False, catchExceptions = False):
+    def newGame(self, layout, pacmanAgent, ghostAgents, quiet = False):
         agents = [pacmanAgent] + ghostAgents[:layout.getNumGhosts()]
         initState = GameState()
-        initState.initialize(layout, len(ghostAgents))
-        game = Game(agents, self, catchExceptions = catchExceptions)
+        initState.initialize(layout)
+        game = Game(agents, self)
         game.state = initState  #Khởi tạo trạng thái ban đầu của toàn bộ game
         self.initialState = initState.deepCopy()
         self.quiet = quiet
@@ -59,13 +60,13 @@ class PacmanRules:
     @staticmethod
     def consume(position, state):
         x, y = position
-        main.pacman_x = y * 20
-        main.pacman_y =  (x + 3) * 20
+        main.pacman_x = y * main.TILE_SIZE
+        main.pacman_y =  (x + 3) * main.TILE_SIZE
         pygame.draw.rect(main.screen, 'black', (main.pacman_x, main.pacman_y, 20, 20))
         main.draw_pacman()
         if state.data.food[x][y]:
             state.data.scoreChange += 10
-            state.data.food = state.data.food.copy()
+            state.data.food = state.data.food.deepCopy()
             state.data.food[x][y] = False
             state.data.foodEaten = position
             numFood = state.getNumFood()
@@ -76,11 +77,44 @@ class PacmanRules:
         if position in state.getEnergizer():
             state.data.energizer.remove(position)
             state.data.energizerEaten = position
+            state.data.scoreChange += 50
             for i in range(1, len(state.data.agentStates)):
                 state.data.agentStates[i].scaredTimer = SCARED_TIME
             for i in range(0, len(state.data.eaten)):
                 state.data.eaten[i] = False
+            main.blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+            main.pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+            main.inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+            main.clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+            main.draw_ghosts()
 
+        if (240 - numFood) == 70 or (240 - numFood) == 170:
+            fruit_x = 14 * main.TILE_SIZE
+            fruit_y = 21 * main.TILE_SIZE
+            fruit_img = pygame.transform.scale(pygame.image.load(f'assets/fruit.png'), (20, 20))
+            main.screen.blit(fruit_img, (fruit_x, fruit_y))
+            state.data.bonusFruit = (21, 14)
+            state.data.bonusTime = BONUS_TIME
+
+        if state.data.bonusFruit != None:
+            #Trường hợp pacman ăn bonus fruit
+            if position == state.data.bonusFruit and state.data.bonusTime > 0:
+                state.data.scoreChange += 100
+                state.data.bonusFruit = None
+                state.data.bonusTime = 0
+                pygame.draw.rect(main.screen, 'black', (14 * main.TILE_SIZE, 21 * main.TILE_SIZE, 20, 20))
+            
+            #Trường hợp bonus fruit hết thời gian xuất hiện
+            if state.data.bonusTime == 1 and position != state.data.bonusFruit:
+                state.data.bonusTime = 0
+                state.data.bonusFruit = None
+                pygame.draw.rect(main.screen, 'black', (14 * main.TILE_SIZE, 21 * main.TILE_SIZE, 20, 20))
+
+            #Giảm thời gian xuất hiện của bonus fruit sau mỗi lượt đi
+            if state.data.bonusTime > 1:
+                state.data.bonusFruit = (21, 14)
+                state.data.bonusTime = max(0, state.data.bonusTime - 1)
+            
     #Thực hiện di chuyển đến một hướng nào đó
     @staticmethod
     def applyAction(state, action):
@@ -133,17 +167,17 @@ class GhostRules:
         next = ghostState.configuration.getPosition()
         x, y = next
         if ghostIndex == 1:
-            main.blinky_x = y * 20
-            main.blinky_y = (x + 3) * 20
+            main.blinky_x = y * main.TILE_SIZE
+            main.blinky_y = (x + 3) * main.TILE_SIZE
         elif ghostIndex == 2:
-            main.pinky_x = y * 20
-            main.pinky_y = (x + 3) * 20
+            main.pinky_x = y * main.TILE_SIZE
+            main.pinky_y = (x + 3) * main.TILE_SIZE
         elif ghostIndex == 3:
-            main.inky_x = y * 20
-            main.inky_y = (x + 3) * 20
+            main.inky_x = y * main.TILE_SIZE
+            main.inky_y = (x + 3) * main.TILE_SIZE
         elif ghostIndex == 4:
-            main.clyde_x = y * 20
-            main.clyde_y = (x + 3) * 20
+            main.clyde_x = y * main.TILE_SIZE
+            main.clyde_y = (x + 3) * main.TILE_SIZE
         main.draw_ghosts()
 
     @staticmethod
@@ -152,7 +186,25 @@ class GhostRules:
         timer = ghostState.scaredTimer
         if timer == 1:
             ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
-
+            next = ghostState.configuration.getPosition()
+            x, y = next
+            if ghostIndex == 1:
+                main.blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (30, 30))
+                main.blinky_x = y * main.TILE_SIZE
+                main.blinky_y = (x + 3) * main.TILE_SIZE
+            elif ghostIndex == 2:
+                main.pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
+                main.pinky_x = y * main.TILE_SIZE
+                main.pinky_y = (x + 3) * main.TILE_SIZE
+            elif ghostIndex == 3:
+                main.inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
+                main.inky_x = y * main.TILE_SIZE
+                main.inky_y = (x + 3) * main.TILE_SIZE
+            elif ghostIndex == 4:
+                main.clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
+                main.clyde_x = y * main.TILE_SIZE
+                main.clyde_y = (x + 3) * main.TILE_SIZE
+            main.draw_ghosts()
         ghostState.scaredTimer = max(0, timer - 1)
 
     @staticmethod
@@ -177,6 +229,25 @@ class GhostRules:
             GhostRules.placeGhost(state, ghostState)
             ghostState.scaredTimer = 0
             state.data.eaten[agentIndex] = True
+            next = ghostState.configuration.getPosition()
+            x, y = next
+            if agentIndex == 1:
+                main.blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (30, 30))
+                main.blinky_x = y * main.TILE_SIZE
+                main.blinky_y = (x + 3) * main.TILE_SIZE
+            elif agentIndex == 2:
+                main.pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
+                main.pinky_x = y * main.TILE_SIZE
+                main.pinky_y = (x + 3) * main.TILE_SIZE
+            elif agentIndex == 3:
+                main.inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
+                main.inky_x = y * main.TILE_SIZE
+                main.inky_y = (x + 3) * main.TILE_SIZE
+            elif agentIndex == 4:
+                main.clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
+                main.clyde_x = y * main.TILE_SIZE
+                main.clyde_y = (x + 3) * main.TILE_SIZE
+            main.draw_ghosts()
         else:
             if not state.data.win:
                 state.data.scoreChange -= 500
