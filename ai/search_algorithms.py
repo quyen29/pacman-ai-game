@@ -1,43 +1,98 @@
-import heapq
-from ai.utilities import heuristic
-from game.logic import is_valid_move
-
-def a_star(level, start, goal):
-    frontier = []
-    heapq.heappush(frontier, (0, start))
-    parent = {}
-    gn = {}
-
-    parent[start] = None
-    gn[start] = 0
-
-    while frontier:
-        _, current = heapq.heappop(frontier)
-
-        if current == goal:
-            break
-
-        x, y = current
-        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            next_pos = (x + dx, y + dy)
-
-            if is_valid_move(level, next_pos[0] * 20, next_pos[1] * 20):
-                new_cost = gn[current] + 1
-                if next_pos not in gn or new_cost < gn[next_pos]:
-                    gn[next_pos] = new_cost
-                    priority = new_cost + heuristic(next_pos, goal)
-                    heapq.heappush(frontier, (priority, next_pos))
-                    parent[next_pos] = current
-
+from ai.utilities import *
+def pacmanDFS(problem):
+    frontier = Stack()
+    frontier.push(problem.getStartState())
+    visited = []
     path = []
-    current = goal
-    if goal not in parent:
-        print("Không tìm thấy dường đi")
-        return []
-    while current != start:
-        path.append(current)
-        current = parent[current]
-    path.reverse()
-    return path
+    explore = []
 
+    while not frontier.isEmpty():
+        currState = frontier.pop()
+        path = explore.pop()
 
+        if problem.isGoalState(currState):
+            return path
+
+        if currState not in visited:
+            visited.append(currState)
+            successors = problem.getSuccessors(currState)
+            for child, direction, cost in successors:
+                frontier.push(child)
+                tempPath = path + [direction]
+                explore.append(tempPath)  #Thêm đường đi mới vào
+    return []
+
+def pacmanBFS(problem):
+    frontier = Queue()
+    frontier.push(problem.getStartState())
+    visited = []
+    path = []
+    explore = []
+
+    while not frontier.isEmpty():
+        currState = frontier.pop()
+        path = explore.pop()
+
+        if problem.isGoalState(currState):
+            return path
+
+        if currState not in visited:
+            visited.append(currState)
+            successors = problem.getSuccessors(currState)
+            for child, direction, cost in successors:
+                frontier.push(child)
+                tempPath = path + [direction]
+                explore.append(tempPath)  #Thêm đường đi mới vào
+    return []
+
+def pacmanUCS(problem):
+    frontier = PriorityQueue()
+    frontier.push(problem.getStartState(), 0)
+    visited = []
+    path = []
+    explore = PriorityQueue()
+    while not frontier.isEmpty():
+        currState = frontier.pop()
+        path = explore.pop()
+
+        if problem.isGoalState(currState):
+            return path
+        
+        if currState not in visited:
+            visited.append(currState)
+            successors = problem.getSuccessors(currState)
+            for child, direction, cost in successors:
+                tempPath = path + [direction]
+                costToGo = problem.getCostOfActions(tempPath)
+                if child not in visited:
+                    frontier.push(child, costToGo)
+                    explore.push(tempPath, costToGo)
+    return []
+
+#Dùng trong trường hợp dùng thuật toán A* nhưng không có hàm heuristic thực tế
+def pacmanNullHeuristic(static, problem = None):
+    return 0
+
+def pacmanASS(problem, heuristic = pacmanNullHeuristic):
+    frontier = PriorityQueue()
+    frontier.push(problem.getStartState(), 0)
+    visited = []
+    path = []
+    explore = PriorityQueue()
+    while not frontier.isEmpty():
+        currState = frontier.pop()
+        path = explore.pop()
+
+        if problem.isGoalState(currState):
+            return path
+        
+        if currState not in visited:
+            visited.append(currState)
+            successors = problem.getSuccessors(currState)
+            for child, direction, cost in successors:
+                tempPath = path + [direction]
+                costToGo = problem.getCostOfActions(tempPath) + heuristic(child, problem)
+                if child not in visited:
+                    frontier.push(child, costToGo)
+                    explore.push(tempPath, costToGo)
+    return []

@@ -1,17 +1,6 @@
 import heapq
 from abc import ABC, abstractmethod
-
-def changeTypeOfMaze(intMaze):
-    boolMaze = []
-    for i in range(0, len(intMaze)):
-        row = []
-        for j in range(0, len(intMaze[0])):
-            if 0 <= intMaze[i][j] <= 2:
-                row.append(False)
-            else:
-                row.append(True)
-        boolMaze.append(row)
-    return boolMaze
+import random
 
 class Stack:
     def __init__(self):
@@ -83,7 +72,7 @@ def nearestPoint(pos):
     nearCol = int(pos[1] + 0.5)
     return (nearRow, nearCol)
 
-class SearchProblem:
+class SearchProblem(ABC):
     @abstractmethod
     def getStartState(self):
         #Trả về trạng thái ban đầu của agent

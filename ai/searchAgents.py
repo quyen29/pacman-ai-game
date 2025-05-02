@@ -2,7 +2,7 @@ import time
 
 from characters.pacman import *
 from ai.utilities import SearchProblem, manhattanDistance
-from ai.search_alrogithms import *
+from ai.search_algorithms import *
 
 def scoreEvaluationFunction(currentGameState):
     return currentGameState.getScore()

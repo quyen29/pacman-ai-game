@@ -1,5 +1,5 @@
-from characters.agents import *
-from game.logic import TIME_PENALTY, PacmanRules, GhostRules
+from characters.agents import Configuration, Directions
+from game.logic import TIME_PENALTY, GhostRules, PacmanRules
 
 class AgentState:
     def __init__(self, startConfiguration, isPacman):
@@ -48,14 +48,17 @@ class GameStateData:
     def __init__(self, prevState = None):
         if prevState != None:
             self.food = prevState.food.shallowCopy()  #Là mảng 2 chiều đánh dấu vị trí có food là True, không có food là False
+            self.bonusFruit = prevState.bonusFruit
+            self.bonusTime = prevState.bonusTime
             self.energizer = prevState.energizer[:]  #Là danh sách vị trí của các energizer
-            self.agentStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
+            self.agenStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
             self.layout = prevState.layout  #Là mê cung ban đầu, không thay đổi trong suốt các lượt chơi
             self.eaten = prevState.eaten  #Là danh sách đánh dấu agent nào bị ăn trong lượt chơi trước
             self.score = prevState.score  #Là tổng số điểm hiện tại của game 
         
         self.foodEaten = None  #Là vị trí food đã ăn
         self.bonusFruit = None  #Là vị trí của food mới sinh ra
+        self.bonusTime = 0
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
         self.agentMoved = None  #Là index của agent di chuyển trong lượt hiện tại
         self.lose = False  #Là trạng thái thắng thua của game
@@ -83,7 +86,7 @@ class GameStateData:
     def __eq__(self, other):
         if other == None:
             return False
-        if not self.agentStates == other.agentStates:  #Gọi eq trong class AgentState -> gọi eq trong class Configuration
+        if not self.agenStates == other.agentStates:  #Gọi eq trong class AgentState -> gọi eq trong class Configuration
             return False
         if not self.food == other.food:  #Gọi eq của class Grid
             return False
@@ -95,7 +98,7 @@ class GameStateData:
     
     #Tạo key
     def __hash__(self):
-        hashAgentStates = hash(tuple(self.agentStates))
+        hashAgentStates = hash(tuple(self.agenStates))
         hashFood = hash(self.food)
         hashEnergizer = hash(self.energizer)
         hashScore = hash(self.score)
@@ -110,7 +113,7 @@ class GameStateData:
         """
 
     def __str__(self):
-        return f"Agent: {self.agentMoved}\nScore Change: {self.scoreChange}\nScore: {self.score}\nPosition: {self.agentStates[self.agentMoved].getPosition()}"
+        return f"Agent: {self.agentMoved}\nScore Change: {self.scoreChange}\nScore: {self.score}\nPosition: {self.agenStates[self.agentMoved].getPosition()}"
     
     def initialize(self, layout, numGhostAgents):
         self.food = layout.food.copy()
@@ -119,7 +122,7 @@ class GameStateData:
         self.score = 0
         self.scoreChange = 0
 
-        self.agentStates = []
+        self.agenStates = []
         numGhosts = 0
         for isPacman, pos in layout.agentPosition:
             #Cho phép cài đặt game có bao nhiêu ghost bằng cách gán giá trị cho biến numGhostAgents
@@ -128,9 +131,9 @@ class GameStateData:
                     continue
                 else:
                     numGhosts += 1
-            self.agentStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
+            self.agenStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
         self.eaten = []
-        for i in range(0, len(self.agentStates)):
+        for i in range(0, len(self.agenStates)):
             self.eaten.append(False)
 
 class GameState:
@@ -219,7 +222,7 @@ class GameState:
         state = GameState(self)
 
         if agentIndex == 0:
-            state.data.eaten = [False for i in range(0, state.getNumAgents())]
+            # state.data.eaten = [False for i in range(0, state.getNumAgents())]
             PacmanRules.applyAction(state, action)
         else:
             GhostRules.applyAction(state, action, agentIndex)
@@ -261,3 +264,4 @@ class GameState:
         if agentIndex == 0 or agentIndex >= self.getNumAgents():
             raise Exception("Agent khong phai ghost")
         return self.data.agenStates[agentIndex].getPosition()
+    

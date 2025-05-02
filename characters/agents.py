@@ -27,12 +27,13 @@ def gameMaze():
     classicMaze[15][12] = "G"
     classicMaze[15][16] = "G"
     return classicMaze
-class Agent:
+
+class Agent(ABC):
     def __init__(self, index = 0):
         self.index = index
         
     @abstractmethod
-    def getAction(self, state):  #Biến state có kiểu dữ liệu là AgentState
+    def getAction(self, gameState):  #Biến gameState có kiểu dữ liệu là GameState
         pass
 
 class Directions:
@@ -442,19 +443,13 @@ class Layout:
         self.agentPositions = boolAgentPosition
 
 class Game:
-    def __init__(self, agents, rules, startingIndex = 0, muteAgents = False, catchExceptions = False):
+    def __init__(self, agents, rules, startingIndex = 0):
         self.agentCrashed = False  #Flag đánh dấu có agent bị lỗi
         self.agents = agents  #Danh sách các agent
         self.rules = rules  #Quy tắc của game
         self.startingIndex = startingIndex  #Index của agent bắt đầu lượt chơi đầu tiên
         self.gameOver = False  #Trạng thái của game đang chạy hay kết thúc
-        self.muteAgents = muteAgents  #Có hiển thị thông báo lỗi của agent không
-        self.catchExceptions = catchExceptions  #Có bắt lỗi khi agent thực thi sai không
         self.moveHistory = []  #Danh sách ghi lại các bước di chuyển trong game
-        self.totalAgentTimes = [0 for agent in agents]  #Danh sách tổng thời gian mà mỗi agent đã dùng
-        self.totalAgentTimeWarnings = [0 for agent in agents]  #Danh sách đếm số lần agent bị cảnh báo vì dùng quá nhiều thời gian
-        self.agentTimeout = False  #Flag báo hiệu agent có bị quá thời gian cho phép hay không
-        self.agentOutput = [io.StringIO() for agent in agents]  #Tạo bộ đệm để ghi lại lỗi nếu không thông báo lỗi của agent ra console
     
     #Trả về tiến độ của game
     def getProgress(self):

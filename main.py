@@ -2,15 +2,11 @@ import pygame
 import copy
 import math
 
-from game.board import boards  # boards là mảng 2D chứa các số từ 0–9 như bạn mô tả
-from characters.agents import *
-from game.state import *
-
+from characters.agents import Layout, gameMaze
 from game.board import boards
-from game.state import GameState
-# from game.logic import move_character, check_collision, eat_dot
 
-from characters.pacman import Pacman
+
+from characters.pacman import AlphaBetaAgent
 from characters.ghosts.blinky import Blinky
 from characters.ghosts.pinky import Pinky
 from characters.ghosts.inky import Inky
@@ -70,8 +66,8 @@ blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.
 pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
 inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
 clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
-scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
-dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
+scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (30, 30))
 
 #Sửa kích thước agent thành 20x20
 # for i in range(1, 5):
@@ -131,13 +127,13 @@ def draw_ghosts():
     screen.blit(pinky_img, (pinky_x, pinky_y))
     screen.blit(inky_img, (inky_x, inky_y))
     screen.blit(clyde_img, (clyde_x, clyde_y))
-
+    
 def runGame():
     from game.logic import ClassicGameRules
     layoutText = gameMaze()
     layout = Layout(layoutText)
 
-    pacman = Pacman() #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
+    pacman = AlphaBetaAgent("betterEvaluationFunction") #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
 
     blinky = Blinky()
 
