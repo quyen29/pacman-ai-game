@@ -1,19 +1,13 @@
-import pygame.transform
+from characters.agents import Agent
+import random
 
+class Pacman(Agent):
+    def __init__(self, index=0):
+        super().__init__(index)
 
-class Pacman:
-    def __init__(self, x, y, speed=2):
-        self.x = x
-        self.y = y
-        self.speed =speed
-        self.direction = 0
-        self.images = [pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (30, 20)) for i in range(1, 5)]
-
-    def move(self):
-        pass
-
-    def update(self):
-        pass
-
-    def reset(self):
-        pass
+    def getAction(self, state):
+        legal_actions = state.getLegalActions(self.index)
+        legal_actions = [a for a in legal_actions if a != 'Stop']
+        if not legal_actions:
+            return 'Stop'
+        return random.choice(legal_actions)

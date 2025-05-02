@@ -2,15 +2,19 @@ import pygame
 import copy
 import math
 
+from game.board import boards  # boards là mảng 2D chứa các số từ 0–9 như bạn mô tả
+from characters.agents import *
+from game.state import *
+
+from game.board import boards
+from game.state import GameState
+# from game.logic import move_character, check_collision, eat_dot
+
 from characters.pacman import Pacman
 from characters.ghosts.blinky import Blinky
 from characters.ghosts.pinky import Pinky
 from characters.ghosts.inky import Inky
 from characters.ghosts.clyde import Clyde
-
-from game.board import boards
-from game.state import State
-from game.logic import move_character, check_collision, eat_dot
 pygame.init()
 
 # Kích thước cửa sổ
@@ -28,17 +32,35 @@ font = pygame.font.Font('freesansbold.ttf', 20)
 level = copy.deepcopy(boards)
 color = 'blue'
 PI = math.pi
+
+#Index = 0
+pacman_x = 14 * TILE_SIZE
+pacman_y= 27 * TILE_SIZE
+direction = 0
+
+#Index = 1
+blinky_x = 14 * TILE_SIZE
+blinky_y = 15 * TILE_SIZE
+blinky_direction = 0
+
+#Index = 2
+pinky_x = 14 * TILE_SIZE
+pinky_y = 18 * TILE_SIZE
+pinky_direction = 0
+
+#Index = 3
+inky_x = 12 * TILE_SIZE
+inky_y = 18 * TILE_SIZE
+inky_direction = 0
+
+#Index = 4
+clyde_x = 16 * TILE_SIZE
+clyde_y = 18 * TILE_SIZE
+clyde_direction = 0
+
+
 counter = 0
 flicker = False
-
-# Khởi tạo
-game_state = State()
-pacman = Pacman(game_state.pacman_pos[0], game_state.pacman_pos[1])
-blinky = Blinky(game_state.ghosts_pos["blinky"][0], game_state.ghosts_pos["blinky"][1])
-pinky = Pinky(game_state.ghosts_pos["pinky"][0], game_state.ghosts_pos["pinky"][1])
-inky = Inky(game_state.ghosts_pos["inky"][0], game_state.ghosts_pos["inky"][1])
-clyde = Clyde(game_state.ghosts_pos["clyde"][0], game_state.ghosts_pos["clyde"][1])
-
 
 pacman_images = []
 for i in range(1, 5):
@@ -51,6 +73,18 @@ clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orang
 scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
 dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
 
+#Sửa kích thước agent thành 20x20
+# for i in range(1, 5):
+#     pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (20, 20)))
+
+# blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (20, 20))
+# pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (20, 20))
+# inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
+# clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
+# scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
+# dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
+
+
 
 def draw_board():
     for row in range(len(level)):
@@ -62,6 +96,9 @@ def draw_board():
                 pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 4)
             elif level[row][col] == 2 and not flicker:  # energizer
                 pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 10)
+
+                #Sửa kích thước energizer thành 8
+                # pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 8)
             elif level[row][col] == 3:  # tường dọc
                 pygame.draw.line(screen, color, (x + TILE_SIZE // 2, y), (x + TILE_SIZE // 2, y + TILE_SIZE), 3)
             elif level[row][col] == 4:  # tường ngang
@@ -78,7 +115,7 @@ def draw_board():
                 pygame.draw.line(screen, 'white', (x, y + TILE_SIZE // 2), (x + TILE_SIZE, y + TILE_SIZE // 2), 3)
 
 def draw_pacman():
-    screen.blit(pacman.images[counter // 5], (pacman.x, pacman.y))
+    screen.blit(pacman_images[counter // 5], (pacman_x, pacman_y))
     # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
     # if direction == 0:
     #     screen.blit(pacman_images[counter // 5], (pacman.x, pacman.y))
@@ -90,10 +127,33 @@ def draw_pacman():
     #     screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 270), (pacman.x, pacman.y))
 
 def draw_ghosts():
-    screen.blit(blinky.image, (blinky.x, blinky.y))
-    screen.blit(pinky.image, (pinky.x, pinky.y))
-    screen.blit(inky.image, (inky.x, inky.y))
-    screen.blit(clyde.image, (clyde.x, clyde.y))
+    screen.blit(blinky_img, (blinky_x, blinky_y))
+    screen.blit(pinky_img, (pinky_x, pinky_y))
+    screen.blit(inky_img, (inky_x, inky_y))
+    screen.blit(clyde_img, (clyde_x, clyde_y))
+
+def runGame():
+    from game.logic import ClassicGameRules
+    layoutText = gameMaze()
+    layout = Layout(layoutText)
+
+    pacman = Pacman() #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
+
+    blinky = Blinky()
+
+    pinky = Pinky()
+
+    inky = Inky()
+
+    clyde = Clyde()
+
+    ghosts = [blinky, pinky, inky, clyde]
+
+    rules = ClassicGameRules()
+
+    game = rules.newGame(layout, pacman, ghosts)
+
+    game.run()
 
 def main():
     global counter
@@ -114,11 +174,13 @@ def main():
         draw_pacman()
         draw_ghosts()
 
-        blinky.move((pacman.x, pacman.y), level)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    runGame()
 
         pygame.display.flip()
     pygame.quit()
