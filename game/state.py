@@ -48,6 +48,8 @@ class GameStateData:
     def __init__(self, prevState = None):
         if prevState != None:
             self.food = prevState.food.shallowCopy()  #Là mảng 2 chiều đánh dấu vị trí có food là True, không có food là False
+            self.bonusFruit = prevState.bonusFruit
+            self.bonusTime = prevState.bonusTime
             self.energizer = prevState.energizer[:]  #Là danh sách vị trí của các energizer
             self.agenStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
             self.layout = prevState.layout  #Là mê cung ban đầu, không thay đổi trong suốt các lượt chơi
@@ -56,6 +58,7 @@ class GameStateData:
         
         self.foodEaten = None  #Là vị trí food đã ăn
         self.bonusFruit = None  #Là vị trí của food mới sinh ra
+        self.bonusTime = 0
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
         self.agentMoved = None  #Là index của agent di chuyển trong lượt hiện tại
         self.lose = False  #Là trạng thái thắng thua của game
@@ -219,7 +222,7 @@ class GameState:
         state = GameState(self)
 
         if agentIndex == 0:
-            state.data.eaten = [False for i in range(0, state.getNumAgents())]
+            # state.data.eaten = [False for i in range(0, state.getNumAgents())]
             PacmanRules.applyAction(state, action)
         else:
             GhostRules.applyAction(state, action, agentIndex)

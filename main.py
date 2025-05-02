@@ -5,6 +5,7 @@ import math
 from game.board import boards  # boards là mảng 2D chứa các số từ 0–9 như bạn mô tả
 from characters.agents import *
 from game.state import *
+from characters.pacman import *
 
 pygame.init()
 
@@ -62,8 +63,8 @@ blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.
 pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
 inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
 clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
-scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
-dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
+scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (30, 30))
 
 #Sửa kích thước agent thành 20x20
 # for i in range(1, 5):
@@ -122,12 +123,12 @@ def draw_ghosts():
     screen.blit(pinky_img, (pinky_x, pinky_y))
     screen.blit(inky_img, (inky_x, inky_y))
     screen.blit(clyde_img, (clyde_x, clyde_y))
-
+    
 def runGame():
     layoutText = gameMaze()
     layout = Layout(layoutText)
 
-    pacman = ___ #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
+    pacman = AlphaBetaAgent("betterEvaluationFunction") #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
 
     blinky = ___
 
