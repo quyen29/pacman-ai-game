@@ -1,6 +1,5 @@
 import heapq
 from abc import ABC, abstractmethod
-import random
 
 class Stack:
     def __init__(self):

@@ -1,6 +1,7 @@
 from characters.agents import Configuration, Directions
 from game.logic import TIME_PENALTY, GhostRules, PacmanRules
 
+
 class AgentState:
     def __init__(self, startConfiguration, isPacman):
         self.start = startConfiguration  #Trạng thái ban đầu của agent
@@ -264,4 +265,3 @@ class GameState:
         if agentIndex == 0 or agentIndex >= self.getNumAgents():
             raise Exception("Agent khong phai ghost")
         return self.data.agenStates[agentIndex].getPosition()
-    

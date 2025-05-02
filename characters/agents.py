@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 import random
-import io
-import sys
 import traceback
 
 from game.board import boards

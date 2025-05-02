@@ -2,7 +2,6 @@ import pygame
 
 from ai.utilities import nearestPoint, manhattanDistance
 from characters.agents import Game, Actions, Directions
-from game.state import GameState
 
 SCARED_TIME = 40
 BONUS_TIME = 40
@@ -13,6 +12,7 @@ class ClassicGameRules:
         self.timeout = timeout  #Thời gian tối đa để agent đưa ra quyết định, đơn vị là giây
 
     def newGame(self, layout, pacmanAgent, ghostAgents, quiet = False):
+        from game.state import GameState
         agents = [pacmanAgent] + ghostAgents[:layout.getNumGhosts()]
         initState = GameState()
         initState.initialize(layout)

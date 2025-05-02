@@ -1,4 +1,3 @@
-import random
 from ai.utilities import manhattanDistance
 from characters.agents import Agent
 
@@ -156,13 +155,11 @@ class Pacman():
         self.score = 0
         self.lives = 3
 
-class Pacman(Agent):
-    def __init__(self, index=0):
-        super().__init__(index)
+    def move(self):
+        pass
 
-    def getAction(self, state):
-        legal_actions = state.getLegalActions(self.index)
-        legal_actions = [a for a in legal_actions if a != 'Stop']
-        if not legal_actions:
-            return 'Stop'
-        return random.choice(legal_actions)
+    def update(self):
+        pass
+
+    def reset(self):
+        pass
