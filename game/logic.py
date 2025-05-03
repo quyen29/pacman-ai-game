@@ -86,7 +86,6 @@ class PacmanRules:
             state.data.bonusTime = BONUS_TIME
 
         if state.data.bonusFruit != None:
-            print(state.data.bonusTime)
             #Trường hợp pacman ăn bonus fruit
             if position == state.data.bonusFruit and state.data.bonusTime > 0:
                 state.data.scoreChange += 100
