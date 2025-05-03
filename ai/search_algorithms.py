@@ -79,6 +79,7 @@ def pacmanASS(problem, heuristic = pacmanNullHeuristic):
     visited = []
     path = []
     explore = PriorityQueue()
+    explore.push([], 0)
     while not frontier.isEmpty():
         currState = frontier.pop()
         path = explore.pop()

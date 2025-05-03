@@ -1,6 +1,6 @@
 import pygame
 
-from ai.utilities import nearestPoint, manhattanDistance
+from ai.utilities import manhattanDistance, nearestPoint
 from characters.agents import Game, Actions, Directions
 
 SCARED_TIME = 40
@@ -88,6 +88,7 @@ class PacmanRules:
             main.clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
             main.draw_ghosts()
 
+        numFood = state.getNumFood()
         if (240 - numFood) == 70 or (240 - numFood) == 170:
             fruit_x = 14 * main.TILE_SIZE
             fruit_y = 21 * main.TILE_SIZE
@@ -139,7 +140,7 @@ class GhostRules:
         config = state.getGhostState(ghostIndex).configuration
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
-        if ghostState.scaredTiemr > 0:
+        if ghostState.scaredTimer > 0:
             speed /= 2
         possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, speed)
         reverse = Actions.reverseDirection(config.direction)
@@ -161,7 +162,7 @@ class GhostRules:
         
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
-        if ghostState.scaredTiemr > 0:
+        if ghostState.scaredTimer > 0:
             speed /= 2
         vector = Actions.directionToVector(action, speed)
         ghostState.configuration = ghostState.configuration.generateSuccessor(vector)
