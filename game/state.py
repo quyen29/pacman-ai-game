@@ -52,14 +52,12 @@ class GameStateData:
             self.bonusFruit = prevState.bonusFruit
             self.bonusTime = prevState.bonusTime
             self.energizer = prevState.energizer[:]  #Là danh sách vị trí của các energizer
-            self.agenStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
+            self.agentStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
             self.layout = prevState.layout  #Là mê cung ban đầu, không thay đổi trong suốt các lượt chơi
             self.eaten = prevState.eaten  #Là danh sách đánh dấu agent nào bị ăn trong lượt chơi trước
             self.score = prevState.score  #Là tổng số điểm hiện tại của game 
         
         self.foodEaten = None  #Là vị trí food đã ăn
-        self.bonusFruit = None  #Là vị trí của food mới sinh ra
-        self.bonusTime = 0
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
         self.agentMoved = None  #Là index của agent di chuyển trong lượt hiện tại
         self.lose = False  #Là trạng thái thắng thua của game
@@ -87,7 +85,7 @@ class GameStateData:
     def __eq__(self, other):
         if other == None:
             return False
-        if not self.agenStates == other.agentStates:  #Gọi eq trong class AgentState -> gọi eq trong class Configuration
+        if not self.agentStates == other.agentStates:  #Gọi eq trong class AgentState -> gọi eq trong class Configuration
             return False
         if not self.food == other.food:  #Gọi eq của class Grid
             return False
@@ -99,9 +97,9 @@ class GameStateData:
     
     #Tạo key
     def __hash__(self):
-        hashAgentStates = hash(tuple(self.agenStates))
+        hashAgentStates = hash(tuple(self.agentStates))
         hashFood = hash(self.food)
-        hashEnergizer = hash(self.energizer)
+        hashEnergizer = hash(tuple(self.energizer))
         hashScore = hash(self.score)
         return int((hashAgentStates + 13 * hashFood + 113 * hashEnergizer + 7 * hashScore) % 1048575)
         """
@@ -114,27 +112,29 @@ class GameStateData:
         """
 
     def __str__(self):
-        return f"Agent: {self.agentMoved}\nScore Change: {self.scoreChange}\nScore: {self.score}\nPosition: {self.agenStates[self.agentMoved].getPosition()}"
+        return f"Agent: {self.agentMoved}\nScore Change: {self.scoreChange}\nScore: {self.score}\nPosition: {self.agentStates[self.agentMoved].getPosition()}"
     
     def initialize(self, layout, numGhostAgents):
-        self.food = layout.food.copy()
+        self.food = layout.food.deepCopy()
         self.energizer = layout.energizer[:]
         self.layout = layout
         self.score = 0
         self.scoreChange = 0
+        self.bonusFruit = None
+        self.bonusTime = 0
 
-        self.agenStates = []
+        self.agentStates = []
         numGhosts = 0
-        for isPacman, pos in layout.agentPosition:
+        for isPacman, pos in layout.agentPositions:
             #Cho phép cài đặt game có bao nhiêu ghost bằng cách gán giá trị cho biến numGhostAgents
             if not isPacman:
                 if numGhosts == numGhostAgents:
                     continue
                 else:
                     numGhosts += 1
-            self.agenStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
+            self.agentStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
         self.eaten = []
-        for i in range(0, len(self.agenStates)):
+        for i in range(0, len(self.agentStates)):
             self.eaten.append(False)
 
 class GameState:
@@ -187,7 +187,7 @@ class GameState:
         return self.data.lose
     
     def getNumAgents(self):
-        return len(self.data.agenStates)
+        return len(self.data.agentStates)
     
     def getScore(self):
         return self.data.score
@@ -232,7 +232,7 @@ class GameState:
             if action == Directions.STOP:
                 state.data.scoreChange += -TIME_PENALTY
         else:
-            GhostRules.decrementTimer(state.data.agenStates[agentIndex])
+            GhostRules.decrementTimer(state, agentIndex)
 
         GhostRules.checkDeath(state, agentIndex)
 
@@ -245,17 +245,17 @@ class GameState:
     def generatePacmanSuccessor(self, action):
         return self.generateSuccessor(0, action)
     
-    def getPacmaState(self):
-        return self.data.agenStates[0].copy()
+    def getPacmanState(self):
+        return self.data.agentStates[0].copy()
     def getGhostStates(self):
-        return self.data.agenStates[1:]
+        return self.data.agentStates[1:]
     def getGhostState(self, agentIndex):
         if agentIndex == 0 or agentIndex >= self.getNumAgents():
             raise Exception("Agent khong phai ghost")
-        return self.data.agenStates[agentIndex]
+        return self.data.agentStates[agentIndex]
     
     def getPacmanPosition(self):
-        return self.data.agenStates[0].getPosition()
+        return self.data.agentStates[0].getPosition()
     def getGhostPositions(self):
         ghostPositions = []
         for ghost in self.getGhostStates():
@@ -264,4 +264,4 @@ class GameState:
     def getGhostPosition(self, agentIndex):
         if agentIndex == 0 or agentIndex >= self.getNumAgents():
             raise Exception("Agent khong phai ghost")
-        return self.data.agenStates[agentIndex].getPosition()
+        return self.data.agentStates[agentIndex].getPosition()

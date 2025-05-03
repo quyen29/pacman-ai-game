@@ -1,6 +1,7 @@
 import pygame
 import copy
 import math
+import threading
 
 from characters.agents import Layout, gameMaze
 from game.board import boards
@@ -54,6 +55,9 @@ clyde_x = 16 * TILE_SIZE
 clyde_y = 18 * TILE_SIZE
 clyde_direction = 0
 
+bonusFruit_x = 14 * TILE_SIZE
+bonusFruit_y = 21 * TILE_SIZE
+bonusFruit_img = pygame.transform.scale(pygame.image.load(f'assets/fruit.png'), (20, 20))
 
 counter = 0
 flicker = False
@@ -109,6 +113,8 @@ def draw_board():
                 pygame.draw.arc(screen, color, [x - TILE_SIZE * 0.4, y - TILE_SIZE * 0.4, TILE_SIZE, TILE_SIZE], 3 * PI / 2, 2 * PI, 2)
             elif level[row][col] == 9:  # cửa pen
                 pygame.draw.line(screen, 'white', (x, y + TILE_SIZE // 2), (x + TILE_SIZE, y + TILE_SIZE // 2), 3)
+            elif level[row][col] == 10: # bonus fruit
+                screen.blit(bonusFruit_img, (bonusFruit_x, bonusFruit_y))
 
 def draw_pacman():
     screen.blit(pacman_images[counter // 5], (pacman_x, pacman_y))
@@ -149,12 +155,93 @@ def runGame():
 
     game = rules.newGame(layout, pacman, ghosts)
 
-    game.run()
+    return game
+
+def updatePositionAgent(game):
+    global pacman_x
+    global pacman_y
+    global blinky_x
+    global blinky_y
+    global pinky_x
+    global pinky_y
+    global inky_x
+    global inky_y
+    global clyde_x
+    global clyde_y
+    global level
+    global blinky_img
+    global pinky_img
+    global inky_img
+    global clyde_img
+    #Vẽ pacman
+    pacmanState = game.state.data.agentStates[0]
+    pacmanPos = pacmanState.getPosition()
+    pacman_x = pacmanPos[1] * TILE_SIZE
+    pacman_y = (pacmanPos[0] + 3) * TILE_SIZE
+    level[pacmanPos[0]][pacmanPos[1]] = 0
+
+    #Vẽ blinky
+    blinkyState = game.state.data.agentStates[1]
+    blinkyPos = blinkyState.getPosition()
+    blinky_x = blinkyPos[1] * TILE_SIZE
+    blinky_y = (blinkyPos[0] + 3) * TILE_SIZE
+
+    #Vẽ pinky
+    pinkyState = game.state.data.agentStates[2]
+    pinkyPos = pinkyState.getPosition()
+    pinky_x = pinkyPos[1] * TILE_SIZE
+    pinky_y = (pinkyPos[0] + 3) * TILE_SIZE
+
+    #Vẽ inky
+    inkyState = game.state.data.agentStates[3]
+    inkyPos = inkyState.getPosition()
+    inky_x = inkyPos[1] * TILE_SIZE
+    inky_y = (inkyPos[0] + 3) * TILE_SIZE
+
+    #Vẽ clyde
+    clydeState = game.state.data.agentStates[4]
+    clydePos = clydeState.getPosition()
+    clyde_x = clydePos[1] * TILE_SIZE
+    clyde_y = (clydePos[0] + 3) * TILE_SIZE
+
+    if blinkyState.scaredTimer != 0:
+        blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (TILE_SIZE, TILE_SIZE))
+    else:
+        blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (TILE_SIZE, TILE_SIZE))
+
+    if pinkyState.scaredTimer != 0:
+        pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (TILE_SIZE, TILE_SIZE))
+    else:
+        pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (TILE_SIZE, TILE_SIZE))
+
+    if inkyState.scaredTimer != 0:
+        inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (TILE_SIZE, TILE_SIZE))
+    else:
+        inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (TILE_SIZE, TILE_SIZE))
+
+    if clydeState.scaredTimer != 0:
+        clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (TILE_SIZE, TILE_SIZE))
+    else:
+        clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (TILE_SIZE, TILE_SIZE))
+    
+    print(game.state.data.bonusTime)
+    if game.state.data.bonusTime != 0:
+        level[18][14] = 10
+        
+    if game.state.data.bonusTime == 0:
+        level[18][14] = 0
+
+def logicFunction(game):
+    if game and not game.gameOver:
+        game.run()
+        updatePositionAgent(game)
 
 def main():
     global counter
     global flicker
     run = True
+    game = None
+    logicThread = None
     while run:
         timer.tick(fps)
         if counter < 19:
@@ -176,7 +263,12 @@ def main():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    runGame()
+                    game = runGame()
+            
+        if game and not game.gameOver:
+            if logicThread is None or not logicThread.is_alive():
+                logicThread = threading.Thread(target = logicFunction, args = (game,))
+                logicThread.start()
 
         pygame.display.flip()
     pygame.quit()
