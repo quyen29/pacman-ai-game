@@ -6,6 +6,7 @@ from game.board import boards
 from ai.utilities import manhattanDistance
 
 def gameMaze():
+    import main
     classicMaze = []
     for i in range(0, len(boards)):
         row = []
@@ -19,11 +20,11 @@ def gameMaze():
             elif boards[i][j] == 2:
                 row.append("o")
         classicMaze.append(row)
-    classicMaze[24][14] = "P"
-    classicMaze[12][14] = "G"
-    classicMaze[15][14] = "G"
-    classicMaze[15][12] = "G"
-    classicMaze[15][16] = "G"
+    classicMaze[int((main.pacman_y / 20) - 3)][int(main.pacman_x / 20)] = "P"
+    classicMaze[int((main.blinky_y / 20) - 3)][int(main.blinky_x / 20)] = "G"
+    classicMaze[int((main.pinky_y / 20) - 3)][int(main.pinky_x / 20)] = "G"
+    classicMaze[int((main.inky_y / 20) - 3)][int(main.inky_x / 20)] = "G"
+    classicMaze[int((main.clyde_y / 20) - 3)][int(main.clyde_x / 20)] = "G"
     return classicMaze
 
 class Agent(ABC):
@@ -108,13 +109,20 @@ class Actions:
             next_x = x + (dx * speed)
             next_y = y + (dy * speed)
 
-            if not walls[int(next_x + 0.5)][int(next_y + 0.5)]: 
-                possible.append(dir)
-            else:
-                spaceX = abs(int(next_x + 0.5) - next_x)
-                spaceY = abs(int(next_y + 0.5) - next_y)
+            if next_x > 29:
+                next_x = 0
+            elif next_x < 0:
+                next_x = 29
 
-                if spaceX == 0.5 or spaceY == 0.5:
+            if speed == 0.5:
+                if dir == Directions.WEST or dir == Directions.NORTH:
+                    if not walls[int(next_x)][int(next_y)]:
+                        possible.append(dir)
+                else:
+                    if not walls[int(next_x + 0.5)][int(next_y + 0.5)]:
+                        possible.append(dir)
+            else:
+                if not walls[int(next_x)][int(next_y)]:
                     possible.append(dir)
         return possible
 
@@ -147,6 +155,10 @@ class Actions:
     def getSuccessor(position, action):
         dx, dy = Actions.directionToVector(action)
         x, y = position
+        if x == 29 and action == Directions.EAST:
+            return (0, y + dy)
+        elif x == 0 and action == Directions.WEST:
+            return(29, y + dy)
         return (x + dx, y + dy)
 
 #Lớp lưu trữ thông tin về vị trí và hướng di chuyển
@@ -195,6 +207,10 @@ class Configuration:
         #Nếu direction là STOP thì phải giữ nguyên direction cũ, không được đặt direction là STOP
         if direction == Directions.STOP:
             direction = self.direction
+        if x == 29 and direction == Directions.EAST:
+            return Configuration((0, y + dy), direction)
+        elif x == 0 and direction == Directions.WEST:
+            return Configuration((29, y + dy), direction)
         return Configuration((x + dx, y + dy), direction)
 
 class Grid:
@@ -215,6 +231,12 @@ class Grid:
                 for j in range(0, width):
                     row.append(initialValue)
                 self.data.append(row)
+
+    def __getitem__(self, i):
+        return self.data[i]
+
+    def __setitem__(self, key, item):
+        self.data[key] = item
 
     def __str__(self):
         result = ""
@@ -467,6 +489,10 @@ class Game:
         self.startingIndex = startingIndex  #Index của agent bắt đầu lượt chơi đầu tiên
         self.gameOver = False  #Trạng thái của game đang chạy hay kết thúc
         self.moveHistory = []  #Danh sách ghi lại các bước di chuyển trong game
+        self.numMoves = 0
+        self.agentIndex = self.startingIndex
+        self.state = None
+        self.initialized = False
     
     #Trả về tiến độ của game
     def getProgress(self):
@@ -484,36 +510,45 @@ class Game:
         self.rules.agentCrash(self, agentIndex)
 
     def run(self):
-        self.numMoves = 0
-        for i in range(0, len(self.agents)):
-            agent = self.agents[i]
-            if not agent: 
-                print(f"Agent {i} xay ra loi khi load") 
-                self.agentCrash(i, quiet = True)  #Kết thúc game
+        nameAgent = ["Pacman", "Blinky", "Pinky", "Inky", "Clyde"]
+        if self.gameOver:
+            return
+        
+        if not self.initialized:
+            print("Khoi tao agent")
+            for i in range(0, len(self.agents)):
+                agent = self.agents[i]
+                if not agent: 
+                    print(f"Agent {i} xay ra loi khi load") 
+                    self.agentCrash(i, quiet = True)  #Kết thúc game
+            self.initialized = True
+            print("Khoi tao agent thanh cong")
 
-        agentIndex = self.startingIndex
-        numAgent = len(self.agents)
+        agent = self.agents[self.agentIndex]
+        observation = self.state.deepCopy()
 
-        while not self.gameOver:
-            agent = self.agents[agentIndex]
-            observation = self.state.deepCopy()
+        try:
+            print(f"{nameAgent[self.agentIndex]} dang lay hanh dong...")
+            action = agent.getAction(observation)
+            print(f"{nameAgent[self.agentIndex]} lay hanh dong thanh cong")
+        except Exception as e:
+            print(f"Agent {self.agentIndex} bi loi: {e}")
+            self.agentCrash(self.agentIndex)
+            return
+        
+        print(f"{nameAgent[self.agentIndex]} them hanh dong vao lich su")
+        self.moveHistory.append((self.agentIndex, action))
+        try:
+            print(f"{nameAgent[self.agentIndex]} tao lai trang thai cua game sau khi di chuyen")
+            self.state = self.state.generateSuccessor(self.agentIndex, action)
+        except Exception as e:
+            print(f"Agent {self.agentIndex} co loi khi di chuyen: {e}")
+            self.agentCrash(self.agentIndex)
+            return
+        self.rules.process(self.state, self)
 
-            try:
-                action = agent.getAction(observation)
-            except Exception as e:
-                print(f"Agent {agentIndex} bi loi: {e}")
-                self.agentCrash(agentIndex)
-                return
-            
-            self.moveHistory.append((agentIndex, action))
-            try:
-                self.state = self.state.generateSuccessor(agentIndex, action)
-            except Exception as e:
-                print(f"Agent {agentIndex} co loi khi di chuyen: {e}")
-                self.agentCrash(agentIndex)
-                return
-            self.rules.process(self.state, self)
-            if agentIndex == numAgent - 1:
-                self.numMoves += 1
+        if self.agentIndex == len(self.agents) - 1:
+            self.numMoves += 1
 
-            agentIndex = (agentIndex + 1) % numAgent
+        self.agentIndex = (self.agentIndex + 1) % len(self.agents)
+        print(f"Score: {observation.getScore()}")

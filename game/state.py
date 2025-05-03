@@ -58,8 +58,6 @@ class GameStateData:
             self.score = prevState.score  #Là tổng số điểm hiện tại của game 
         
         self.foodEaten = None  #Là vị trí food đã ăn
-        self.bonusFruit = None  #Là vị trí của food mới sinh ra
-        self.bonusTime = 0
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
         self.agentMoved = None  #Là index của agent di chuyển trong lượt hiện tại
         self.lose = False  #Là trạng thái thắng thua của game
@@ -117,11 +115,13 @@ class GameStateData:
         return f"Agent: {self.agentMoved}\nScore Change: {self.scoreChange}\nScore: {self.score}\nPosition: {self.agentStates[self.agentMoved].getPosition()}"
     
     def initialize(self, layout, numGhostAgents):
-        self.food = layout.food.copy()
+        self.food = layout.food.deepCopy()
         self.energizer = layout.energizer[:]
         self.layout = layout
         self.score = 0
         self.scoreChange = 0
+        self.bonusFruit = None
+        self.bonusTime = 0
 
         self.agentStates = []
         numGhosts = 0
