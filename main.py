@@ -224,7 +224,6 @@ def updatePositionAgent(game):
     else:
         clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (TILE_SIZE, TILE_SIZE))
     
-    print(game.state.data.bonusTime)
     if game.state.data.bonusTime != 0:
         level[18][14] = 10
         
