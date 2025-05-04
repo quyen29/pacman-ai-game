@@ -1,4 +1,4 @@
-from characters.agents import Actions, Agent, Directions
+from characters.agents import Actions, Agent, Directions, Grid
 from ai.search_algorithms import pacmanASS
 from ai.utilities import manhattanDistance
 from game.state import GameState
@@ -9,13 +9,13 @@ class Blinky(Agent):
         super().__init__(index)
         self.mode = 'chase'
         self.prng = PRNG(seed=12345)
-        self.scattertarget = (27, 0) # Quay về góc trên phải
+        self.scatter_target = (2, 26) # Quay về góc trên phải
 
     def getAction(self, state: GameState):
         blinky_state = state.getGhostState(self.index)
         pacman_pos = state.getPacmanPosition()
 
-        if blinky_state.scaredTimer > 0:
+        if blinky_state.scaredTimer > 0 or self.mode == 'frightened':
             legal = state.getLegalActions(self.index)
             legal = [a for a in legal if a != Directions.STOP]
             if not legal:
@@ -32,15 +32,26 @@ class Blinky(Agent):
                     return direction
             return Directions.STOP
     
-        if hasattr(state, 'isInChaseMode') and state.isInChaseMode():
-            target = pacman_pos
+        if self.mode == 'chase':
+            goal = pacman_pos
+        elif self.mode == 'scatter':
+            goal = self.scatter_target
         else:
-            target = self.scattertarget
+            return Directions.STOP
         
-        problem = BlinkySearchProblem(state, target, self.index)
-        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, target))
+        problem = BlinkySearchProblem(state, goal, self.index)
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+        print(f"Blinky legal actions: {state.getLegalActions(self.index)}")
+        print(f"Blinky planned path: {path}")
+        legal = state.getLegalActions(self.index)
+        legal = [a for a in legal if a != Directions.STOP]  # bỏ STOP nếu cần
         if path:
-            return path[0]
+            for move in path:
+                if move in legal:
+                    return move
+        # nếu không có path hoặc move nào hợp lệ, chọn random hoặc fallback
+        if legal:
+            return legal[0]  # hoặc random.choice(legal)
         return Directions.STOP
 
 class BlinkySearchProblem():
@@ -48,7 +59,7 @@ class BlinkySearchProblem():
         self.start = state.getGhostState(ghost_index).getPosition()
         self.goal = goal
         self.ghost_index = ghost_index
-        self.walls = state.getWalls()
+        self.walls: Grid = state.getWalls()
         self.directions = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
 
     def getStartState(self):
@@ -62,8 +73,9 @@ class BlinkySearchProblem():
         for action in self.directions:
             dx, dy = Actions.directionToVector(action)
             next_x, next_y = int(state[0] + dx), int(state[1] + dy)
-            if 0 <= next_x < self.walls.getWidth() and 0 <= next_y < self.walls.getHeight() and not self.walls[next_x][next_y]:
-                successors.append(((next_x, next_y), action, 1))
+            if 0 <= next_x < self.walls.height and 0 <= next_y < self.walls.width:
+                if not self.walls[next_x][next_y]:
+                    successors.append(((next_x, next_y), action, 1))
             
         return successors
 

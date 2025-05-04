@@ -1,6 +1,6 @@
 import pygame
 
-from ai.utilities import manhattanDistance, nearestPoint
+from ai.utilities import nearestPoint, manhattanDistance
 from characters.agents import Game, Actions, Directions
 
 SCARED_TIME = 40
@@ -81,7 +81,6 @@ class PacmanRules:
             for i in range(0, len(state.data.eaten)):
                 state.data.eaten[i] = False
 
-        numFood = state.getNumFood()
         if (240 - numFood) == 70 or (240 - numFood) == 170:
             state.data.bonusFruit = (21, 14)
             state.data.bonusTime = BONUS_TIME

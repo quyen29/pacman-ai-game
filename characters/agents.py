@@ -264,25 +264,6 @@ class Grid:
                 base *= 2
         return hash(h)
     
-    def get(self, x, y):
-        return self.data[y][x]
-
-    def set(self, x, y, value):
-        self.data[y][x] = value
-    
-    def __getitem__(self, idx):
-        return self.data[idx]
-
-    def __setitem__(self, idx, value):
-        self.data[idx] = value
-
-    def copy(self):
-        copyGrid = Grid(self.width, self.height)
-        for x in range(self.width):
-            for y in range(self.height):
-                copyGrid.set(x, y, self.get(x, y))
-        return copyGrid
-    
     #Tạo bản sao mà khi thay đổi bản sao thì bản gốc không thay đổi
     def deepCopy(self):
         g = Grid(self.width, self.height)
@@ -308,7 +289,7 @@ class Grid:
         for i in range(0, self.height):
             for j in range(0, self.width):
                 if self.data[i][j] == key:
-                    list.append((j, i))
+                    list.append((i, j))
         return list
 
     def cellIndexToPosition(self, index):
