@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 import traceback
+import copy
 
 from game.board import boards
 from ai.utilities import manhattanDistance
@@ -229,7 +230,7 @@ class Grid:
             for i in range(0, height):
                 row = []
                 for j in range(0, width):
-                    row.append(initialValue)
+                    row.append(copy.deepcopy(initialValue))
                 self.data.append(row)
 
     def __getitem__(self, i):
@@ -369,10 +370,10 @@ class Layout:
     
     def initializeVisibilityMatrix(self):
         global VISIBILITY_MATRIX_CACHE
-        if "".join(self.layoutText) not in VISIBILITY_MATRIX_CACHE:
+        if "".join(self.layoutText[0]) not in VISIBILITY_MATRIX_CACHE:
             vecs = [(-1, 0), (1, 0), (0, 1), (0, -1)]
             dirs = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
-            vis = Grid(self.width, self.height, {Directions.NORTH: set(), Directions.SOUTH: set(), Directions.WEST: set(), Directions.STOP: set()})
+            vis = Grid(self.width, self.height, {Directions.NORTH: set(), Directions.SOUTH: set(), Directions.EAST: set(), Directions.WEST: set(), Directions.STOP: set()})
             
             for x in range(0, self.height):
                 for y in range(0, self.width):
@@ -381,13 +382,17 @@ class Layout:
                         for vec, dir in zip(vecs, dirs):
                             dx, dy = vec
                             nextx, nexty = x + dx, y + dy
-                            while not self.walls[nextx][nexty]:
-                                vis[x][y][dir].add((nextx, nexty))
-                                nextx, nexty = nextx + dx, nexty + dy
+                            if 0 <= nextx <= 32:
+                                if 0 <= nexty <= 29:
+                                    while not self.walls[nextx][nexty]:
+                                        vis[x][y][dir].add((nextx, nexty))
+                                        nextx, nexty = nextx + dx, nexty + dy
+                                        if nextx < 0 or nextx > 32 or nexty < 0 or nexty > 29:
+                                            break    
             self.visibility = vis
-            VISIBILITY_MATRIX_CACHE["".join(self.layoutText)] = vis
+            VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])] = vis
         else:
-            self.visibility = VISIBILITY_MATRIX_CACHE["".join(self.layoutText)]
+            self.visibility = VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])]
         
     def isWall(self, pos):
         x, y = pos
