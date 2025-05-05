@@ -1,3 +1,5 @@
+import copy
+
 from characters.agents import Configuration, Directions
 from game.logic import TIME_PENALTY, GhostRules, PacmanRules
 
@@ -68,11 +70,19 @@ class GameStateData:
     def deepCopy(self):
         state = GameStateData(self)
         state.food = self.food.deepCopy()
+        state.bonusFruit = self.bonusFruit
+        state.bonusTime = self.bonusTime
+        state.energizer = copy.deepcopy(self.energizer)
+        state.agentStates = self.copyAgentStates(self.agentStates)
         state.layout = self.layout.deepCopy()
+        state.eaten = copy.deepcopy(self.eaten[:])
+        state.score = self.score
         state.agentMoved = self.agentMoved
         state.foodEaten = self.foodEaten
-        state.bonusFruit = self.bonusFruit
         state.energizerEaten = self.energizerEaten
+        state.lose = self.lose
+        state.win = self.win
+        state.scoreChange = self.scoreChange
         return state
     
     #Tạo bản sao danh sách trạng thái của tất cả các agent
