@@ -12,9 +12,9 @@ def gameMaze():
     for i in range(0, len(boards)):
         row = []
         for j in range(0, len(boards[0])):
-            if 3 <= boards[i][j] <= 9:
+            if 3 <= boards[i][j] <= 8:
                 row.append("%")
-            elif boards[i][j] == 0:
+            elif boards[i][j] == 0 or boards[i][j] == 9:
                 row.append(" ")
             elif boards[i][j] == 1:
                 row.append(".")
