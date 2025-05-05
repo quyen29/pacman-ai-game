@@ -56,7 +56,7 @@ class PacmanRules:
     #Lấy danh sách các hướng di chuyển hợp lệ
     @staticmethod
     def getLegalActions(state):
-        return Actions.getPossibleActions(state.getPacmanState().configuration, state.data.layout.walls, PacmanRules.PACMAN_SPEED)
+        return Actions.getPossibleActions(state.getPacmanState().configuration, state.data.layout.walls, PacmanRules.PACMAN_SPEED, 0)
     
     #Tính toán điểm số nếu agent di chuyển đến vị trí position ở trạng thái state
     @staticmethod
@@ -128,7 +128,7 @@ class GhostRules:
         speed = GhostRules.GHOST_SPEED
         if ghostState.scaredTimer > 0:
             speed /= 2
-        possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, speed)
+        possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, speed, ghostIndex)
         reverse = Actions.reverseDirection(config.direction)
 
         #Ghost bắt buộc phải di chuyển

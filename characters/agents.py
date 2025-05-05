@@ -100,7 +100,7 @@ class Actions:
 
     #Đưa ra những hướng di chuyển cho agent từ Configuration hiện tại
     @staticmethod
-    def getPossibleActions(config, walls, speed):
+    def getPossibleActions(config, walls, speed, agentIndex):
         possible = []
         x, y = config.pos  #config có kiểu dữ liệu là Configuration
         
@@ -109,11 +109,11 @@ class Actions:
             dx, dy = vec
             next_x = x + (dx * speed)
             next_y = y + (dy * speed)
-
-            if next_x > 29:
-                next_x = 0
-            elif next_x < 0:
-                next_x = 29
+            
+            if next_y > 29:
+                next_y = 0
+            elif next_y < 0:
+                next_y = 29
 
             if speed == 0.5:
                 if dir == Directions.WEST or dir == Directions.NORTH:
@@ -123,8 +123,12 @@ class Actions:
                     if not walls[int(next_x + 0.5)][int(next_y + 0.5)]:
                         possible.append(dir)
             else:
-                if not walls[int(next_x)][int(next_y)]:
-                    possible.append(dir)
+                if agentIndex == 0:
+                    if walls[int(next_x)][int(next_y)] == False or (int(next_x) == 13 and int(next_y) != 14) or (int(next_x) == 13 and int(next_y) != 15):
+                        possible.append(dir)
+                else:
+                    if not walls[int(next_x)][int(next_y)]:
+                        possible.append(dir)
         return possible
 
     #Trả về các ô hàng xóm có thể đi tới mà không bị tường chặn
@@ -156,10 +160,10 @@ class Actions:
     def getSuccessor(position, action):
         dx, dy = Actions.directionToVector(action)
         x, y = position
-        if x == 29 and action == Directions.EAST:
-            return (0, y + dy)
-        elif x == 0 and action == Directions.WEST:
-            return(29, y + dy)
+        if y == 29 and action == Directions.EAST:
+            return (x + dx, 0)
+        elif y == 0 and action == Directions.WEST:
+            return(x + dx, 29)
         return (x + dx, y + dy)
 
 #Lớp lưu trữ thông tin về vị trí và hướng di chuyển
@@ -208,10 +212,10 @@ class Configuration:
         #Nếu direction là STOP thì phải giữ nguyên direction cũ, không được đặt direction là STOP
         if direction == Directions.STOP:
             direction = self.direction
-        if x == 29 and direction == Directions.EAST:
-            return Configuration((0, y + dy), direction)
-        elif x == 0 and direction == Directions.WEST:
-            return Configuration((29, y + dy), direction)
+        if y == 29 and direction == Directions.EAST:
+            return Configuration((x + dx, 0), direction)
+        elif y == 0 and direction == Directions.WEST:
+            return Configuration((x + dx, 29), direction)
         return Configuration((x + dx, y + dy), direction)
 
 class Grid:
