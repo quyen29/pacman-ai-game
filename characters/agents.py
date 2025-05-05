@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 import traceback
+import copy
 
 from game.board import boards
 from ai.utilities import manhattanDistance
@@ -11,9 +12,9 @@ def gameMaze():
     for i in range(0, len(boards)):
         row = []
         for j in range(0, len(boards[0])):
-            if 3 <= boards[i][j] <= 9:
+            if 3 <= boards[i][j] <= 8:
                 row.append("%")
-            elif boards[i][j] == 0:
+            elif boards[i][j] == 0 or boards[i][j] == 9:
                 row.append(" ")
             elif boards[i][j] == 1:
                 row.append(".")
@@ -99,7 +100,7 @@ class Actions:
 
     #Đưa ra những hướng di chuyển cho agent từ Configuration hiện tại
     @staticmethod
-    def getPossibleActions(config, walls, speed):
+    def getPossibleActions(config, walls, speed, agentIndex):
         possible = []
         x, y = config.pos  #config có kiểu dữ liệu là Configuration
         
@@ -108,11 +109,11 @@ class Actions:
             dx, dy = vec
             next_x = x + (dx * speed)
             next_y = y + (dy * speed)
-
-            if next_x > 29:
-                next_x = 0
-            elif next_x < 0:
-                next_x = 29
+            
+            if next_y > 29:
+                next_y = 0
+            elif next_y < 0:
+                next_y = 29
 
             if speed == 0.5:
                 if dir == Directions.WEST or dir == Directions.NORTH:
@@ -122,8 +123,12 @@ class Actions:
                     if not walls[int(next_x + 0.5)][int(next_y + 0.5)]:
                         possible.append(dir)
             else:
-                if not walls[int(next_x)][int(next_y)]:
-                    possible.append(dir)
+                if agentIndex == 0:
+                    if walls[int(next_x)][int(next_y)] == False or (int(next_x) == 13 and int(next_y) != 14) or (int(next_x) == 13 and int(next_y) != 15):
+                        possible.append(dir)
+                else:
+                    if not walls[int(next_x)][int(next_y)]:
+                        possible.append(dir)
         return possible
 
     #Trả về các ô hàng xóm có thể đi tới mà không bị tường chặn
@@ -155,10 +160,10 @@ class Actions:
     def getSuccessor(position, action):
         dx, dy = Actions.directionToVector(action)
         x, y = position
-        if x == 29 and action == Directions.EAST:
-            return (0, y + dy)
-        elif x == 0 and action == Directions.WEST:
-            return(29, y + dy)
+        if y == 29 and action == Directions.EAST:
+            return (x + dx, 0)
+        elif y == 0 and action == Directions.WEST:
+            return(x + dx, 29)
         return (x + dx, y + dy)
 
 #Lớp lưu trữ thông tin về vị trí và hướng di chuyển
@@ -207,10 +212,10 @@ class Configuration:
         #Nếu direction là STOP thì phải giữ nguyên direction cũ, không được đặt direction là STOP
         if direction == Directions.STOP:
             direction = self.direction
-        if x == 29 and direction == Directions.EAST:
-            return Configuration((0, y + dy), direction)
-        elif x == 0 and direction == Directions.WEST:
-            return Configuration((29, y + dy), direction)
+        if y == 29 and direction == Directions.EAST:
+            return Configuration((x + dx, 0), direction)
+        elif y == 0 and direction == Directions.WEST:
+            return Configuration((x + dx, 29), direction)
         return Configuration((x + dx, y + dy), direction)
 
 class Grid:
@@ -229,7 +234,7 @@ class Grid:
             for i in range(0, height):
                 row = []
                 for j in range(0, width):
-                    row.append(initialValue)
+                    row.append(copy.deepcopy(initialValue))
                 self.data.append(row)
 
     def __getitem__(self, i):
@@ -369,10 +374,10 @@ class Layout:
     
     def initializeVisibilityMatrix(self):
         global VISIBILITY_MATRIX_CACHE
-        if "".join(self.layoutText) not in VISIBILITY_MATRIX_CACHE:
+        if "".join(self.layoutText[0]) not in VISIBILITY_MATRIX_CACHE:
             vecs = [(-1, 0), (1, 0), (0, 1), (0, -1)]
             dirs = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
-            vis = Grid(self.width, self.height, {Directions.NORTH: set(), Directions.SOUTH: set(), Directions.WEST: set(), Directions.STOP: set()})
+            vis = Grid(self.width, self.height, {Directions.NORTH: set(), Directions.SOUTH: set(), Directions.EAST: set(), Directions.WEST: set(), Directions.STOP: set()})
             
             for x in range(0, self.height):
                 for y in range(0, self.width):
@@ -381,13 +386,17 @@ class Layout:
                         for vec, dir in zip(vecs, dirs):
                             dx, dy = vec
                             nextx, nexty = x + dx, y + dy
-                            while not self.walls[nextx][nexty]:
-                                vis[x][y][dir].add((nextx, nexty))
-                                nextx, nexty = nextx + dx, nexty + dy
+                            if 0 <= nextx <= 32:
+                                if 0 <= nexty <= 29:
+                                    while not self.walls[nextx][nexty]:
+                                        vis[x][y][dir].add((nextx, nexty))
+                                        nextx, nexty = nextx + dx, nexty + dy
+                                        if nextx < 0 or nextx > 32 or nexty < 0 or nexty > 29:
+                                            break    
             self.visibility = vis
-            VISIBILITY_MATRIX_CACHE["".join(self.layoutText)] = vis
+            VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])] = vis
         else:
-            self.visibility = VISIBILITY_MATRIX_CACHE["".join(self.layoutText)]
+            self.visibility = VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])]
         
     def isWall(self, pos):
         x, y = pos
