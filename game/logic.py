@@ -56,7 +56,7 @@ class PacmanRules:
     #Lấy danh sách các hướng di chuyển hợp lệ
     @staticmethod
     def getLegalActions(state):
-        return Actions.getPossibleActions(state.getPacmanState().configuration, state.data.layout.walls, PacmanRules.PACMAN_SPEED, 0)
+        return Actions.getPossibleActions(state.getPacmanState().configuration, state.data.layout.walls, 0)
     
     #Tính toán điểm số nếu agent di chuyển đến vị trí position ở trạng thái state
     @staticmethod
@@ -111,8 +111,8 @@ class PacmanRules:
         
         pacmanState = state.data.agentStates[0]  #Biến pacmanState tham chiếu đến state.data.agentStates[0]. Nghĩa là pacmanState thay đổi thì state.data.agentStates[0] cũng thay đổi
 
-        vector = Actions.directionToVector(action, PacmanRules.PACMAN_SPEED)
-        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector)
+        vector = Actions.directionToVector(action)
+        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector, 0)
 
         next = pacmanState.configuration.getPosition()
         PacmanRules.consume(next, state)
@@ -128,7 +128,7 @@ class GhostRules:
         speed = GhostRules.GHOST_SPEED
         if ghostState.scaredTimer > 0:
             speed /= 2
-        possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, speed, ghostIndex)
+        possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, ghostIndex)
         reverse = Actions.reverseDirection(config.direction)
 
         #Ghost bắt buộc phải di chuyển
@@ -150,7 +150,7 @@ class GhostRules:
         if ghostState.scaredTimer > 0:
             speed /= 2
         vector = Actions.directionToVector(action, speed)
-        ghostState.configuration = ghostState.configuration.generateSuccessor(vector)
+        ghostState.configuration = ghostState.configuration.generateSuccessor(vector, ghostIndex)
 
     @staticmethod
     def decrementTimer(state, ghostIndex):
@@ -182,13 +182,19 @@ class GhostRules:
             for agent in state.data.eaten:
                 if agent:
                     countGhostEaten += 1
+            print(f"So ghost da an: {countGhostEaten}")
             state.data.scoreChange += ((2 ** countGhostEaten) * 100)
             GhostRules.placeGhost(state, ghostState)
             ghostState.scaredTimer = 0
         else:
-            if not state.data.win:
-                state.data.scoreChange -= 500
-                state.data.lose = True
+            if state.data.chance == 0:
+                if not state.data.win:
+                    state.data.scoreChange -= 500
+                    state.data.lose = True
+            else:
+                if not state.data.reset:
+                    state.data.chance -= 1
+                    state.data.reset = True
 
     @staticmethod
     def canKill(pacmanPosition, ghostPosition):

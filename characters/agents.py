@@ -88,9 +88,9 @@ class Actions:
         if dx > 0:
             return Directions.SOUTH
         if dy > 0:
-            return Directions.WEST
-        if dy < 0:
             return Directions.EAST
+        if dy < 0:
+            return Directions.WEST
         return Directions.STOP
 
     #Chuyển từ hướng sang vector và speed cho biết di chuyển bao nhiêu ô theo hướng đó
@@ -101,35 +101,27 @@ class Actions:
 
     #Đưa ra những hướng di chuyển cho agent từ Configuration hiện tại
     @staticmethod
-    def getPossibleActions(config, walls, speed, agentIndex):
+    def getPossibleActions(config, walls, agentIndex):
         possible = []
         x, y = config.pos  #config có kiểu dữ liệu là Configuration
         
         #Đưa ra các hướng có thể đi được
         for dir, vec in Actions.directionsAsList:
             dx, dy = vec
-            next_x = x + (dx * speed)
-            next_y = y + (dy * speed)
+            next_x = x + dx 
+            next_y = y + dy
             
             if next_y > 29:
                 next_y = 0
             elif next_y < 0:
                 next_y = 29
 
-            if speed == 0.5:
-                if dir == Directions.WEST or dir == Directions.NORTH:
-                    if not walls[int(next_x)][int(next_y)]:
-                        possible.append(dir)
-                else:
-                    if not walls[int(next_x + 0.5)][int(next_y + 0.5)]:
-                        possible.append(dir)
+            if agentIndex == 0:
+                if not walls[int(next_x)][int(next_y)] and (int(next_x), int(next_y)) not in [(13, 14), (13, 15)]:
+                    possible.append(dir)
             else:
-                if agentIndex == 0:
-                    if walls[int(next_x)][int(next_y)] == False or (int(next_x) == 13 and int(next_y) != 14) or (int(next_x) == 13 and int(next_y) != 15):
-                        possible.append(dir)
-                else:
-                    if not walls[int(next_x)][int(next_y)] :
-                        possible.append(dir)
+                if not walls[int(next_x)][int(next_y)]:
+                    possible.append(dir)
         return possible
 
     #Trả về các ô hàng xóm có thể đi tới mà không bị tường chặn
@@ -219,18 +211,21 @@ class Configuration:
         return "(x, y) = " + str(self.pos) + ", direction: " + str(self.direction)
     
     #Cập nhật lại vị trí và hướng đi sau khi agent di chuyển
-    def generateSuccessor(self, vector):
+    def generateSuccessor(self, vector, agentIndex):
         x, y = self.pos
         dx, dy = vector
         direction = Actions.vectorToDirection(vector)
         #Nếu direction là STOP thì phải giữ nguyên direction cũ, không được đặt direction là STOP
         if direction == Directions.STOP:
             direction = self.direction
-        if y == 29 and direction == Directions.EAST:
-            return Configuration((x + dx, 0), direction)
-        elif y == 0 and direction == Directions.WEST:
-            return Configuration((x + dx, 29), direction)
-        return Configuration((x + dx, y + dy), direction)
+        if y >= 29 and direction == Directions.EAST:
+            return Configuration((int(x + dx), 0), direction)
+        elif y <= 0 and direction == Directions.WEST:
+            return Configuration((int(x + dx), 29), direction)
+        if agentIndex == 0:
+            return Configuration((int(x + dx), int(y + dy)), direction)
+        else:
+            return Configuration((x + dx, y + dy), direction)
 
 class Grid:
     #False là ô đi được, True là tường
@@ -396,13 +391,13 @@ class Layout:
             for x in range(0, self.height):
                 for y in range(0, self.width):
                     #Nếu ở vị trí không phải là tường thì kiểm tra các ô có thể đi đến theo các hướng từ vị trí đó 
-                    if not self.walls[x][y]:
+                    if not self.walls[x][y] and (x, y) not in [(13, 14), (13, 15)]:
                         for vec, dir in zip(vecs, dirs):
                             dx, dy = vec
                             nextx, nexty = x + dx, y + dy
                             if 0 <= nextx <= 32:
                                 if 0 <= nexty <= 29:
-                                    while not self.walls[nextx][nexty]:
+                                    while not self.walls[nextx][nexty] and (nextx, nexty) not in [(13, 14), (13, 15)]:
                                         vis[x][y][dir].add((nextx, nexty))
                                         nextx, nexty = nextx + dx, nexty + dy
                                         if nextx < 0 or nextx > 32 or nexty < 0 or nexty > 29:
@@ -411,7 +406,7 @@ class Layout:
             VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])] = vis
         else:
             self.visibility = VISIBILITY_MATRIX_CACHE["".join(self.layoutText[0])]
-        
+            
     def isWall(self, pos):
         x, y = pos
         return self.walls[x][y]
@@ -514,7 +509,6 @@ class Game:
         self.rules.agentCrash(self, agentIndex)
 
     def run(self):
-        nameAgent = ["Pacman", "Blinky", "Pinky", "Inky", "Clyde"]
         if self.gameOver:
             return
         
@@ -532,18 +526,16 @@ class Game:
         observation = self.state.deepCopy()
 
         try:
-            print(f"{nameAgent[self.agentIndex]} dang lay hanh dong...")
             action = agent.getAction(observation)
-            print(f"{nameAgent[self.agentIndex]} lay hanh dong thanh cong")
+            if self.agentIndex == 0:
+                print(f"Hanh dong: {action}")
         except Exception as e:
             print(f"Agent {self.agentIndex} bi loi: {e}")
             self.agentCrash(self.agentIndex)
             return
         
-        print(f"{nameAgent[self.agentIndex]} them hanh dong vao lich su")
         self.moveHistory.append((self.agentIndex, action))
         try:
-            print(f"{nameAgent[self.agentIndex]} tao lai trang thai cua game sau khi di chuyen")
             self.state = self.state.generateSuccessor(self.agentIndex, action)
         except Exception as e:
             print(f"Agent {self.agentIndex} co loi khi di chuyen: {e}")
@@ -555,7 +547,8 @@ class Game:
             self.numMoves += 1
 
         self.agentIndex = (self.agentIndex + 1) % len(self.agents)
-        print(f"Score: {observation.getScore()}")
+        if self.agentIndex == 0:
+            print(f"Score: {observation.getScore()}")
 
 class Modes:
     CHASE = 'Chase'
@@ -591,3 +584,4 @@ class GhostModeController:
         self.current_index = 0
         self.current_mode = self.mode_times[0][0]
         self.start_time = time.time()
+        
