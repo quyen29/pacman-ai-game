@@ -57,13 +57,15 @@ class GameStateData:
             self.agentStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
             self.layout = prevState.layout  #Là mê cung ban đầu, không thay đổi trong suốt các lượt chơi
             self.eaten = prevState.eaten  #Là danh sách đánh dấu agent nào bị ăn trong lượt chơi trước
-            self.score = prevState.score  #Là tổng số điểm hiện tại của game 
+            self.score = prevState.score  #Là tổng số điểm hiện tại của game
+            self.chance = prevState.chance
         
         self.foodEaten = None  #Là vị trí food đã ăn
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
         self.agentMoved = None  #Là index của agent di chuyển trong lượt hiện tại
         self.lose = False  #Là trạng thái thắng thua của game
         self.win = False
+        self.reset = False
         self.scoreChange = 0  #Là số điểm mà pacman kiếm thêm được trong lượt hiện tại
     
     #Tạo bản sao của trạng thái hiện tại
@@ -83,6 +85,8 @@ class GameStateData:
         state.lose = self.lose
         state.win = self.win
         state.scoreChange = self.scoreChange
+        state.chance = self.chance
+        state.reset = self.reset
         return state
     
     #Tạo bản sao danh sách trạng thái của tất cả các agent
@@ -132,6 +136,7 @@ class GameStateData:
         self.scoreChange = 0
         self.bonusFruit = None
         self.bonusTime = 0
+        self.chance = 3
 
         self.agentStates = []
         numGhosts = 0
@@ -245,9 +250,15 @@ class GameState:
             GhostRules.decrementTimer(state, agentIndex)
 
         GhostRules.checkDeath(state, agentIndex)
-
         state.data.agentMoved = agentIndex
         state.data.score += state.data.scoreChange
+        if state.data.reset:
+            state.data.agentStates = []
+            for isPacman, pos in state.data.layout.agentPositions:
+                state.data.agentStates.append(AgentState(Configuration(pos, Directions.STOP), isPacman))
+            state.data.eaten = []
+            for i in range(0, len(state.data.agentStates)):
+                state.data.eaten.append(False)
         GameState.explore.add(self)
         GameState.explore.add(state)
         return state
