@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import random
+import time
 import traceback
 import copy
 
@@ -127,7 +128,7 @@ class Actions:
                     if walls[int(next_x)][int(next_y)] == False or (int(next_x) == 13 and int(next_y) != 14) or (int(next_x) == 13 and int(next_y) != 15):
                         possible.append(dir)
                 else:
-                    if not walls[int(next_x)][int(next_y)]:
+                    if not walls[int(next_x)][int(next_y)] :
                         possible.append(dir)
         return possible
 
@@ -542,3 +543,38 @@ class Game:
 
         self.agentIndex = (self.agentIndex + 1) % len(self.agents)
         print(f"Score: {observation.getScore()}")
+
+class Modes:
+    CHASE = 'Chase'
+    SCATTER = 'Scatter'
+    FRIGHTENED = 'Frightened'
+
+class GhostModeController:
+    def __init__(self):
+        self.mode_times = [(Modes.SCATTER, 7), (Modes.CHASE, 20),
+                           (Modes.SCATTER, 7), (Modes.CHASE, 20),
+                           (Modes.SCATTER, 5), (Modes.CHASE, 20),
+                           (Modes.SCATTER, 5), (Modes.CHASE, float("inf"))]
+        self.current_index = 0
+        self.current_mode = self.mode_times[0][0]
+        self.start_time = time.time()
+
+    def update(self):
+        elapsed = time.time() - self.start_time
+        total = 0
+        for i, (mode, duration) in enumerate(self.mode_times):
+            total += duration
+            if elapsed < total:
+                if self.current_index != i:
+                    self.current_index = i
+                    self.current_mode = mode
+                break
+
+    def get_mode(self):
+        self.update()
+        return self.current_mode
+    
+    def reset(self):
+        self.current_index = 0
+        self.current_mode = self.mode_times[0][0]
+        self.start_time = time.time()

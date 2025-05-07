@@ -1,60 +1,52 @@
-from characters.agents import Agent, Directions
-from characters.ghosts.blinky import BlinkySearchProblem
-from ai.search_algorithms import pacmanASS
-from ai.utilities import manhattanDistance
+from characters.agents import Agent, Directions, Modes, GhostModeController
+from ai.search_algorithms import a_star_search
+from ai.utilities import GhostSearchProblem, manhattanDistance
+from game.state import GameState
 from ultils.prng import PRNG
 from math import sqrt
 
 class Clyde(Agent):
     def __init__(self, index=4):
         super().__init__(index)
-        self.mode = 'chase'
         self.prng = PRNG(seed=12345)
         self.scatter_target = (28, 2) # Góc dưới trái
-
-    def setMode(self, mode):
-        self.mode = mode
+        self.mode_controller = GhostModeController()
     
-    def getAction(self, state):
+    def getAction(self, state: GameState):
+        legal = state.getLegalActions(self.index)
         clyde_state = state.getGhostState(self.index)
         clyde_pos = clyde_state.getPosition()
         pacman_pos = state.getPacmanPosition()
+        dist = manhattanDistance(pacman_pos, clyde_pos)
 
-        if self.mode == 'frightened' or clyde_state.scaredTimer > 0:
-            legal = state.getLegalActions(self.index)
-            legal = [a for a in legal if a !=  Directions.STOP]
-            if not legal:
-                return Directions.STOP
-            index = self.prng.next() % len(legal)
-            return legal[index]
-        elif self.mode == 'scatter':
-            goal = self.scatter_target
-        elif self.mode == 'chase':
-            dist = self.euclideanDistance(clyde_pos, pacman_pos)
-            if dist > 8:
-                goal = pacman_pos
+        mode = self.mode_controller.get_mode()
+        if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:
+            if legal:
+                return legal[self.prng.next()% len(legal)]
             else:
-                goal = self.scatter_target
+                return Directions.STOP
+        if dist <= 8:
+            goal = self.scatter_target
         else:
-            return Directions.STOP
-        
-        problem = BlinkySearchProblem(state, goal, self.index)
-        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+            goal = pacman_pos
 
+        walls = state.getWalls()
+        if walls[int(goal[0])][int(goal[1])]:
+            goal = self.scatter_target
+        
+        problem = GhostSearchProblem(state, goal, self.index)
+        path = a_star_search(problem, heuristic=lambda pos, _: self.euclideanDistance(pos, goal))
+        print(f"Clyde Pos: {clyde_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Clyde legal actions: {state.getLegalActions(self.index)}")
         print(f"Clyde planned path: {path}")
-        legal = state.getLegalActions(self.index)
-        legal = state.getLegalActions(self.index)
-        legal = [a for a in legal if a != Directions.STOP]
-
-        if path:
-            for move in path:
-                if move in legal:
-                    return move
-
-        if legal:
-            return legal[0]  # hoặc random.choice(legal)
-        return Directions.STOP
+        
+        if path and path[0] in legal:
+            return path[0]
+        else:
+            if legal:
+                return legal[0]
+            else:
+                return Directions.STOP
 
     @staticmethod
     def euclideanDistance(pos_1, pos_2):
