@@ -1,5 +1,5 @@
 from ai.utilities import manhattanDistance
-from characters.agents import Agent
+from characters.agents import Agent, Directions, Actions
 
 def scoreEvaluationFunction(currentGameState):
     return currentGameState.getScore()
@@ -28,7 +28,7 @@ def betterEvaluationFunction(currentGameState):
     ghostPos = []  #Danh sách vị trí của các ghost
     for ghost in newGhostStates:
         ghostPos.append(ghost.getPosition())
-    ghostDistance = []
+    ghostDistance = [0]
     for pos in ghostPos:
         ghostDistance.append(manhattanDistance(newPos, pos))
 
@@ -68,6 +68,80 @@ def betterEvaluationFunction(currentGameState):
         """
     return score
 
+def loopEvaluationFunction(currentGameState):
+    score = currentGameState.getScore()
+    pacmanPos = currentGameState.getPacmanPosition()
+    ghostStates = currentGameState.getGhostStates()
+    ghostPos = currentGameState.getGhostPositions()
+    currPos = PACMAN_STAYED[-6:]
+    layout = currentGameState.data.layout
+    food = currentGameState.getFood()
+    foodList = food.asList()
+    layout.initializeVisibilityMatrix()
+    visFromSouth = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.SOUTH]
+    visFromNorth = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.NORTH]
+    visFromEast = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.EAST]
+    visFromWest = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.WEST]
+    visFromPos = visFromSouth | visFromNorth | visFromEast | visFromWest
+    if pacmanPos not in currPos:
+        score += 300
+        for i in range(0, len(ghostPos)):
+            if ghostPos[i] in visFromPos:
+                if ghostStates[i].scaredTimer > 0:
+                    score += 100
+                else:
+                    score -= 200
+                    score += manhattanDistance(pacmanPos, ghostPos[i])
+            else:
+                if manhattanDistance(ghostPos[i], pacmanPos) <= 4:
+                    if ghostStates[i].scaredTimer > 0:
+                        score += 100
+                    else:
+                        score -= 500
+    else:
+        nextPos = {Directions.SOUTH: None, Directions.NORTH: None, Directions.EAST: None, Directions.WEST: None}
+        possibleAction = Actions.getPossibleActions(currentGameState.getPacmanState().configuration, layout.walls, 0)
+        for action in possibleAction:
+            nextPos[action] = Actions.getSuccessor(pacmanPos, action)
+        farthestPosition = 999
+        for key, value in nextPos.items():
+            if value != None:
+                if value not in PACMAN_STAYED:
+                    score += 300
+                    farthestPosition = 0
+                else:
+                    lastAppear = len(PACMAN_STAYED) - 1 - PACMAN_STAYED[::-1].index(value)
+                    if lastAppear < farthestPosition:
+                        farthestPosition = lastAppear
+        score -= farthestPosition
+        for i in range(0, len(ghostPos)):
+            if ghostPos[i] in visFromPos:
+                if ghostStates[i].scaredTimer > 0:
+                    score += 100
+                else:
+                    score -= 200
+                    score += manhattanDistance(pacmanPos, ghostPos[i])
+            else:
+                if manhattanDistance(ghostPos[i], pacmanPos) <= 4:
+                    if ghostStates[i].scaredTimer > 0:
+                        score += 100
+                    else:
+                        score -= 500
+        
+        minFoodDistance = 999
+        countFood = 0
+        for i in foodList:
+            if i in visFromPos:
+                score += 1
+            distance = manhattanDistance(pacmanPos, i)
+            if distance < minFoodDistance:
+                minFoodDistance = distance
+        if countFood == 0:
+            score -= minFoodDistance
+    return score
+
+PACMAN_STAYED = []
+COUNT_LOOP = 0
 class MultiAgent(Agent):
     def __init__(self, evaluationFunction, depth):
         super().__init__(0)
@@ -86,12 +160,16 @@ class AlphaBetaAgent(MultiAgent):
         super().__init__(evaluationFunction, depth)
     
     def getAction(self, gameState):
+        global COUNT_LOOP
         def maxLevel(gameState, depth, alpha, beta):
             currDepth = depth + 1  #Mỗi lần pacman di chuyển thì tăng độ sâu
 
             #Nếu pacman thắng hoặc thua hoặc đạt tới giưới hạn độ sâu thì trả về điểm đánh giá
             if gameState.isWin() or gameState.isLose() or currDepth == self.depth:
-                return self.evaluationFunction(gameState)
+                if COUNT_LOOP < 3:
+                    return self.evaluationFunction(gameState)
+                else:
+                    return loopEvaluationFunction(gameState)
             
             maxValue = -999999  #Khởi tạo giá trị lớn nhất có thể, đặt giá trị của biến bằng -999999 là để có thể kiểm tra được mọi giá trị
             actions = gameState.getLegalActions(0)  #Danh sách các hành động hợp lệ của pacman
@@ -107,7 +185,10 @@ class AlphaBetaAgent(MultiAgent):
         def minLevel(gameState, depth, agentIndex, alpha, beta):
             minValue = 999999
             if gameState.isWin() or gameState.isLose():
-                return self.evaluationFunction(gameState)
+                if COUNT_LOOP < 3:
+                    return self.evaluationFunction(gameState)
+                else:
+                    return loopEvaluationFunction(gameState)
             actions = gameState.getLegalActions(agentIndex)  #Danh sách hành động hợp lệ của ghost có index là agentIndex
             beta1 = beta  #Gán giá trị của biến beta vào biến beta1 để tránh ảnh hưởng đến giá trị ban đầu của beta
 
@@ -128,38 +209,47 @@ class AlphaBetaAgent(MultiAgent):
                         return minValue
                     beta1 = min(beta1, minValue)
             return minValue
-    
+        
         actions = gameState.getLegalActions(0)  #Danh sách các hướng đi hợp lệ của pacman
         currScore = -999999
         returnAction = ""
         alpha = -999999
         beta = 999999
 
+        stateWithAction = {Directions.SOUTH: None, Directions.NORTH: None, Directions.EAST: None, Directions.WEST: None}  
+        currPos = []
+
+        if Directions.STOP in actions:
+            actions.remove(Directions.STOP)
+        print(actions)
+
         #Duyệt từng hành động hợp lệ của pacman
         for action in actions:
             nextState = gameState.generateSuccessor(0, action)  #Tạo trạng thái tiếp theo của toàn bộ game sau khi pacman thực hiện hành động action
             score = minLevel(nextState, 0, 1, alpha, beta)  #Sau khi pacman hành động phải xem ghost hành động như thế nào
+            stateWithAction[action] = nextState
+            print(f"Hanh dong: {action}, Diem: {score}")
+            print(f"Count loop: {COUNT_LOOP}")
             if score > currScore:
                 returnAction = action
                 currScore = score
             if score > beta:
+                PACMAN_STAYED.append(stateWithAction[returnAction].getPacmanPosition())
+                if len(PACMAN_STAYED) > 4:
+                    currPos = PACMAN_STAYED[-4:]
+                    if len(set(currPos)) == 2:
+                        COUNT_LOOP += 1
+                    else:
+                        if stateWithAction[returnAction].data.scoreChange != 0:
+                            COUNT_LOOP = 0
                 return returnAction
             alpha = max(alpha, score)
+        if len(PACMAN_STAYED) > 4:
+            currPos = PACMAN_STAYED[-4:]
+            if len(set(currPos)) == 2:
+                COUNT_LOOP += 1
+            else:
+                if stateWithAction[returnAction].data.scoreChange != 0:
+                    COUNT_LOOP = 0
+        PACMAN_STAYED.append(stateWithAction[returnAction].getPacmanPosition())
         return returnAction
-
-class Pacman():
-    def __init___(self, x, y):
-        self.x = x
-        self.y = y
-        self.direction = 0
-        self.score = 0
-        self.lives = 3
-
-    def move(self):
-        pass
-
-    def update(self):
-        pass
-
-    def reset(self):
-        pass
