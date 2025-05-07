@@ -152,6 +152,7 @@ class Actions:
                 continue
 
             #Nếu vị trí tiếp theo không phải là tường thì thêm vào neighbors
+            print(f"Target ({next_x},{next_y}) nằm ngoài bản đồ (max x: {walls.width - 1}, max y: {walls.height - 1})")
             if not walls[next_x][next_y]:
                 neighbors.append((next_x, next_y))
         return neighbors
@@ -166,6 +167,18 @@ class Actions:
         elif y == 0 and action == Directions.WEST:
             return(x + dx, 29)
         return (x + dx, y + dy)
+    #Tính toán 4 bước tiếp theo của pacman
+    def get_ahead_position(pos, direction, steps=4):
+        x, y = pos
+        if direction == 'UP':
+            return (x, y - steps)
+        elif direction == 'DOWN':
+            return (x, y + steps)
+        elif direction == 'LEFT':
+            return (x - steps, y)
+        elif direction == 'RIGHT':
+            return (x + steps, y)
+        return pos
 
 #Lớp lưu trữ thông tin về vị trí và hướng di chuyển
 class Configuration:
