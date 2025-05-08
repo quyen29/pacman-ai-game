@@ -10,6 +10,7 @@ class AgentState:
         self.configuration = startConfiguration  #Trạng thái hiện tại của agent 
         self.isPacman = isPacman  #Agent có phải là pacman hay không
         self.scaredTimer = 0  #Thời gian mà ghost ở trạng thái hoảng sợ
+        self.inPen = not isPacman # Pacman ngoài pen và các ghost trong pen
 
     def __str__(self):
         if self.isPacman:
@@ -35,6 +36,7 @@ class AgentState:
         state = AgentState(self.start, self.isPacman)
         state.configuration = self.configuration
         state.scaredTimer = self.scaredTimer
+        state.inPen = self.inPen
         return state
         
     def getPosition(self):
@@ -151,6 +153,8 @@ class GameStateData:
         self.eaten = []
         for i in range(0, len(self.agentStates)):
             self.eaten.append(False)
+            if i == 1:
+                self.agentStates[i].inPen = False
 
 class GameState:
     def __init__(self, prevState = None):
