@@ -122,7 +122,7 @@ class GhostRules:
 
     #Lấy danh sách các hướng di chuyển hợp lệ
     @staticmethod
-    def getLegalActions(self,state, ghostIndex):
+    def getLegalActions(state, ghostIndex):
         config = state.getGhostState(ghostIndex).configuration
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
