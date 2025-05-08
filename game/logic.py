@@ -141,8 +141,9 @@ class GhostRules:
     
     @staticmethod
     def applyAction(state, action, ghostIndex):
-        legal = GhostRules.getLegalActions(state, ghostIndex)
-        if action not in legal:
+        legal = GhostRules.getLegalActions(state, ghostIndex) 
+        print("Hanh dong hop le", legal, "Hanh dong dang xet", action)
+        if action not in legal: 
             raise Exception("Hanh dong khong hop le")
         
         ghostState = state.data.agentStates[ghostIndex]

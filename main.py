@@ -17,7 +17,7 @@ pygame.init()
 # Kích thước cửa sổ
 TILE_SIZE = 20
 WIDTH = 30 * TILE_SIZE
-HEIGHT = 38 * TILE_SIZE
+HEIGHT = 39 * TILE_SIZE
 
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption("Pac-Man")

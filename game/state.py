@@ -220,13 +220,14 @@ class GameState:
         return self.data.layout.walls
 
     def getLegalActions(self, agentIndex = 0):
+        state = GameState(self)
         if self.isWin() or self.isLose():
             return []
 
         if agentIndex == 0:
             return PacmanRules.getLegalActions(self)
         else:
-            return GhostRules.getLegalActions(self, agentIndex)
+            return GhostRules.getLegalActions(state, agentIndex)
         
     def getLegalPacmanActions(self):
         return self.getLegalActions(0)
