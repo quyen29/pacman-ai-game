@@ -158,21 +158,14 @@ def runGame():
     return game
 
 def updatePositionAgent(game):
-    global pacman_x
-    global pacman_y
-    global blinky_x
-    global blinky_y
-    global pinky_x
-    global pinky_y
-    global inky_x
-    global inky_y
-    global clyde_x
-    global clyde_y
+    global pacman_x, pacman_y
+    global blinky_x, blinky_y
+    global pinky_x, pinky_y
+    global inky_x, inky_y
+    global clyde_x, clyde_y
     global level
-    global blinky_img
-    global pinky_img
-    global inky_img
-    global clyde_img
+    global blinky_img, pinky_img, inky_img, clyde_img
+    
     #Vẽ pacman
     pacmanState = game.state.data.agentStates[0]
     pacmanPos = pacmanState.getPosition()
