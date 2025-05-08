@@ -143,7 +143,6 @@ class Actions:
                 continue
 
             #Nếu vị trí tiếp theo không phải là tường thì thêm vào neighbors
-            print(f"Target ({next_x},{next_y}) nằm ngoài bản đồ (max x: {walls.width - 1}, max y: {walls.height - 1})")
             if not walls[next_x][next_y]:
                 neighbors.append((next_x, next_y))
         return neighbors
