@@ -5,143 +5,54 @@ def scoreEvaluationFunction(currentGameState):
     return currentGameState.getScore()
 
 def betterEvaluationFunction(currentGameState):
-    """
-    - Các đặc điểm của hàm đánh giá này:
-        + Ưu tiên ăn các dots
-        + Ưu tiên ăn ghosts khi ghosts ở trạng thái hoảng sợ
-        + Tránh ghosts
-        + Tính khoảng cách manhattan
-    """
-    #Biến currentGameState có kiểu dữ liệu là GameState. Biến này là trạng thái giả định của game nếu agent thực hiện một hành động nào đó
-    newPos = currentGameState.getPacmanPosition() 
-    newFood = currentGameState.getFood()  #(Grid) bản đồ food
-    newGhostStates = currentGameState.getGhostStates()  #(list[AgentState]) danh sách trạng thái của ghost
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]  #(list[int]) danh sách thời gian hoảng sợ của ghost
+    pacmanPosition = currentGameState.getPacmanPosition()
 
-    foodList = newFood.asList()  #Lấy danh sách các vị trí có food
-    #Tính khoảng cách của pacman đến các dots nhỏ trong mê cung
-    foodDistance = []
-    for pos in foodList:
-        foodDistance.append(manhattanDistance(newPos, pos))
-    
-    #Tính khoảng cách của pacman đến các ghost
-    ghostPos = []  #Danh sách vị trí của các ghost
-    for ghost in newGhostStates:
-        ghostPos.append(ghost.getPosition())
-    ghostDistance = [0]
-    for pos in ghostPos:
-        ghostDistance.append(manhattanDistance(newPos, pos))
-
-    numberOfEnergizer = len(currentGameState.getEnergizer())
-    score = 0
-    numberOfNoFoods = len(newFood.asList(False))
-    sumScaredTimes = sum(newScaredTimes)
-    sumGhostDistance = sum(ghostDistance)
-    reciprocalFoodDistance = 0 
-    """
-        - Tính nghịch đảo khoảng cách của pacman đến food
-        - Nghĩa là khi khoảng cách càng nhỏ thì điểm phải càng lớn nên cần phải tính nghich đảo
-        - Chỉ được dùng nghịch đảo cho food vì nghịch đảo nhạy hơn các phép tính khác mà pacman cần ưu tiên ăn food
-        - Không được dùng phép trừ vì khoảng cách điểm giữa các trạng thái sẽ không rõ ràng như dùng nghịch đảo
-    """
-    if sum(foodDistance) > 0:
-        reciprocalFoodDistance = 1 / sum(foodDistance)
-
-    score += currentGameState.getScore() + reciprocalFoodDistance + numberOfNoFoods
-    """
-        - Khi chọn di chuyển theo hướng này, pacman ăn được càng nhiều food thì số lượng vị trí không có food sẽ càng tăng
-        - Vì vậy cộng biến numberOfNoFood để đánh gía khả năng ăn food của trạng trạng thái đó
-    """
-
-    if sumScaredTimes > 0:
-        score += sumScaredTimes + (-1 * numberOfEnergizer) + (-1 * sumGhostDistance)
-        """
-            - Thời gian ghost ở trong trạng thái hoảng sợ càng cao thì điểm càng cao để khuyến khích pacman đến ăn ghost
-            - Phải trừ khoảng cách đến ghost vì khoảng cách càng xa điểm càng nhỏ
-            - Phải trừ số lượng energizer vì cần khuyến khích pacman ăn các energizer để duy trì trạng thái hoảng sợ của ghost lâu hơn, để pacman tận dụng hết tài nguyên
-        """
-    else:
-        score += sumGhostDistance + numberOfEnergizer
-        """
-            - Khi ghost không ở trạng thái hoảng sợ thì cần tránh xa ghost vì vậy càng xa ghost thì điểm càng tăng
-            - Pacman cần chờ thời điểm thích hợp để ăn energizer, vì vậy khi ghost không ở trạng thái hoảng sợ thì còn càng nhiều energizer thì điểm càng cao
-        """
-    return score
-
-def loopEvaluationFunction(currentGameState):
-    score = currentGameState.getScore()
-    pacmanPos = currentGameState.getPacmanPosition()
+    ghostPositions = currentGameState.getGhostPositions()
     ghostStates = currentGameState.getGhostStates()
-    ghostPos = currentGameState.getGhostPositions()
-    currPos = PACMAN_STAYED[-6:]
+
     layout = currentGameState.data.layout
     food = currentGameState.getFood()
     foodList = food.asList()
-    layout.initializeVisibilityMatrix()
-    visFromSouth = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.SOUTH]
-    visFromNorth = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.NORTH]
-    visFromEast = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.EAST]
-    visFromWest = layout.visibility[pacmanPos[0]][pacmanPos[1]][Directions.WEST]
-    visFromPos = visFromSouth | visFromNorth | visFromEast | visFromWest
-    if pacmanPos not in currPos:
-        score += 300
-        for i in range(0, len(ghostPos)):
-            if ghostPos[i] in visFromPos:
-                if ghostStates[i].scaredTimer > 0:
-                    score += 100
-                else:
-                    score -= 200
-                    score += manhattanDistance(pacmanPos, ghostPos[i])
-            else:
-                if manhattanDistance(ghostPos[i], pacmanPos) <= 4:
-                    if ghostStates[i].scaredTimer > 0:
-                        score += 100
-                    else:
-                        score -= 500
-    else:
-        nextPos = {Directions.SOUTH: None, Directions.NORTH: None, Directions.EAST: None, Directions.WEST: None}
-        possibleAction = Actions.getPossibleActions(currentGameState.getPacmanState().configuration, layout.walls, 0)
-        for action in possibleAction:
-            nextPos[action] = Actions.getSuccessor(pacmanPos, action)
-        farthestPosition = 999
-        for key, value in nextPos.items():
-            if value != None:
-                if value not in PACMAN_STAYED:
-                    score += 300
-                    farthestPosition = 0
-                else:
-                    lastAppear = len(PACMAN_STAYED) - 1 - PACMAN_STAYED[::-1].index(value)
-                    if lastAppear < farthestPosition:
-                        farthestPosition = lastAppear
-        score -= farthestPosition
-        for i in range(0, len(ghostPos)):
-            if ghostPos[i] in visFromPos:
-                if ghostStates[i].scaredTimer > 0:
-                    score += 100
-                else:
-                    score -= 200
-                    score += manhattanDistance(pacmanPos, ghostPos[i])
-            else:
-                if manhattanDistance(ghostPos[i], pacmanPos) <= 4:
-                    if ghostStates[i].scaredTimer > 0:
-                        score += 100
-                    else:
-                        score -= 500
-        
-        minFoodDistance = 999
-        countFood = 0
-        for i in foodList:
-            if i in visFromPos:
-                score += 1
-            distance = manhattanDistance(pacmanPos, i)
-            if distance < minFoodDistance:
-                minFoodDistance = distance
-        if countFood == 0:
-            score -= minFoodDistance
+    bonusFruit = currentGameState.data.bonusFruit
+    bonusTime = currentGameState.data.bonusTime
+    score = currentGameState.getScore()
+
+    #Tránh ghost
+    for ghost in ghostStates:
+        distance = manhattanDistance(ghost.getPosition(), pacmanPosition)
+        if distance <= 8 and ghost.scaredTimer == 0:
+            score -= 500
+
+    #Ăn energizer
+    if len(currentGameState.getEnergizer()) > 0:
+        score += 100
+        distanceEnergizer = manhattanDistance(pacmanPosition, TARGET_ENERGIZER)
+        score -= distanceEnergizer
+
+    #Ăn ghost (Dựa vào khoảng cách)
+    if TARGET_GHOST != None:
+        score += 100
+        distanceGhostScared = manhattanDistance(pacmanPosition, TARGET_GHOST)
+        score -= distanceGhostScared
+
+    #Ăn bonus fruit (Dựa vào khoảng cách)
+    if bonusFruit != None and bonusTime > 0:
+        distanceBonusFruit = manhattanDistance(pacmanPosition, bonusFruit)
+        if distanceBonusFruit < bonusTime:
+            score += 50
+            score -= distanceBonusFruit
+    
+    #Ăn dots
+    if TARGET_FOOD != None:
+        score -= manhattanDistance(pacmanPosition, TARGET_FOOD)
+
     return score
 
 PACMAN_STAYED = []
-COUNT_LOOP = 0
+TARGET_ENERGIZER = None
+TARGET_FOOD = None
+TARGET_GHOST = None
+
 class MultiAgent(Agent):
     def __init__(self, evaluationFunction, depth):
         super().__init__(0)
@@ -160,16 +71,15 @@ class AlphaBetaAgent(MultiAgent):
         super().__init__(evaluationFunction, depth)
     
     def getAction(self, gameState):
-        global COUNT_LOOP
+        global TARGET_ENERGIZER
+        global TARGET_FOOD
+        global TARGET_GHOST
         def maxLevel(gameState, depth, alpha, beta):
             currDepth = depth + 1  #Mỗi lần pacman di chuyển thì tăng độ sâu
 
             #Nếu pacman thắng hoặc thua hoặc đạt tới giưới hạn độ sâu thì trả về điểm đánh giá
             if gameState.isWin() or gameState.isLose() or currDepth == self.depth:
-                if COUNT_LOOP < 3:
-                    return self.evaluationFunction(gameState)
-                else:
-                    return loopEvaluationFunction(gameState)
+                return self.evaluationFunction(gameState)
             
             maxValue = -999999  #Khởi tạo giá trị lớn nhất có thể, đặt giá trị của biến bằng -999999 là để có thể kiểm tra được mọi giá trị
             actions = gameState.getLegalActions(0)  #Danh sách các hành động hợp lệ của pacman
@@ -185,10 +95,7 @@ class AlphaBetaAgent(MultiAgent):
         def minLevel(gameState, depth, agentIndex, alpha, beta):
             minValue = 999999
             if gameState.isWin() or gameState.isLose():
-                if COUNT_LOOP < 3:
-                    return self.evaluationFunction(gameState)
-                else:
-                    return loopEvaluationFunction(gameState)
+                return self.evaluationFunction(gameState)
             actions = gameState.getLegalActions(agentIndex)  #Danh sách hành động hợp lệ của ghost có index là agentIndex
             beta1 = beta  #Gán giá trị của biến beta vào biến beta1 để tránh ảnh hưởng đến giá trị ban đầu của beta
 
@@ -217,11 +124,48 @@ class AlphaBetaAgent(MultiAgent):
         beta = 999999
 
         stateWithAction = {Directions.SOUTH: None, Directions.NORTH: None, Directions.EAST: None, Directions.WEST: None}  
-        currPos = []
 
         if Directions.STOP in actions:
             actions.remove(Directions.STOP)
         print(actions)
+
+        #Chọn energizer
+        minDistanceEnergizer = 999
+        if len(gameState.getEnergizer()) > 0:
+            for energizer in gameState.getEnergizer():
+                distance = manhattanDistance(gameState.getPacmanPosition(), energizer)
+                if distance < minDistanceEnergizer:
+                    minDistanceEnergizer = distance
+                    TARGET_ENERGIZER = energizer
+        else:
+            TARGET_ENERGIZER = None
+
+        #Chọn food
+        minDistanceFood = 999
+        foodList = gameState.getFood().asList()
+        if len(foodList) > 0:
+            for food in foodList:
+                distance = manhattanDistance(gameState.getPacmanPosition(), food)
+                if distance < minDistanceFood:
+                    minDistanceFood = distance
+                    TARGET_FOOD = food
+        else:
+            TARGET_FOOD = None
+
+        minDistanceGhost = 999
+        ghostStates = gameState.getGhostStates()
+        scaredTime = []
+        for ghost in ghostStates:
+            scaredTime.append(ghost.scaredTimer)
+        if len(set(scaredTime)) == 1 and scaredTime[0] == 0:
+            TARGET_GHOST = None
+        else:
+            for i in range(0, len(ghostStates)):
+                if scaredTime[i] > 0:
+                    distance = manhattanDistance(gameState.getPacmanPosition(), ghostStates[i].getPosition())
+                    if distance < minDistanceGhost:
+                        TARGET_GHOST = ghostStates[i].getPosition()
+        print(f"Target ghost: {TARGET_GHOST}")
 
         #Duyệt từng hành động hợp lệ của pacman
         for action in actions:
@@ -229,27 +173,14 @@ class AlphaBetaAgent(MultiAgent):
             score = minLevel(nextState, 0, 1, alpha, beta)  #Sau khi pacman hành động phải xem ghost hành động như thế nào
             stateWithAction[action] = nextState
             print(f"Hanh dong: {action}, Diem: {score}")
-            print(f"Count loop: {COUNT_LOOP}")
             if score > currScore:
                 returnAction = action
                 currScore = score
             if score > beta:
+                print(f"Score change: {gameState.data.scoreChange}")
                 PACMAN_STAYED.append(stateWithAction[returnAction].getPacmanPosition())
-                if len(PACMAN_STAYED) > 4:
-                    currPos = PACMAN_STAYED[-4:]
-                    if len(set(currPos)) == 2:
-                        COUNT_LOOP += 1
-                    else:
-                        if stateWithAction[returnAction].data.scoreChange != 0:
-                            COUNT_LOOP = 0
                 return returnAction
             alpha = max(alpha, score)
-        if len(PACMAN_STAYED) > 4:
-            currPos = PACMAN_STAYED[-4:]
-            if len(set(currPos)) == 2:
-                COUNT_LOOP += 1
-            else:
-                if stateWithAction[returnAction].data.scoreChange != 0:
-                    COUNT_LOOP = 0
+        print(f"Score change: {gameState.data.scoreChange}")
         PACMAN_STAYED.append(stateWithAction[returnAction].getPacmanPosition())
         return returnAction

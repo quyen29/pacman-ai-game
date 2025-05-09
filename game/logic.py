@@ -190,10 +190,11 @@ class GhostRules:
         else:
             if state.data.chance == 0:
                 if not state.data.win:
-                    state.data.scoreChange -= 500
+                    state.data.scoreChange -= 2000
                     state.data.lose = True
             else:
                 if not state.data.reset:
+                    state.data.scoreChange -= 2000
                     state.data.chance -= 1
                     state.data.reset = True
 
