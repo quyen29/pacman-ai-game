@@ -53,11 +53,13 @@ class GameStateData:
             self.food = prevState.food.shallowCopy()  #Là mảng 2 chiều đánh dấu vị trí có food là True, không có food là False
             self.bonusFruit = prevState.bonusFruit
             self.bonusTime = prevState.bonusTime
+            self.numberOfFruit = prevState.numberOfFruit
             self.energizer = prevState.energizer[:]  #Là danh sách vị trí của các energizer
             self.agentStates = self.copyAgentStates(prevState.agentStates)  #Là danh sách trạng thái của tất cả các agent
             self.layout = prevState.layout  #Là mê cung ban đầu, không thay đổi trong suốt các lượt chơi
             self.eaten = prevState.eaten  #Là danh sách đánh dấu agent nào bị ăn trong lượt chơi trước
             self.score = prevState.score  #Là tổng số điểm hiện tại của game
+            self.rateScore = prevState.rateScore
             self.chance = prevState.chance
         
         self.foodEaten = None  #Là vị trí food đã ăn
@@ -133,6 +135,8 @@ class GameStateData:
         self.energizer = layout.energizer[:]
         self.layout = layout
         self.score = 0
+        self.rateScore = 0
+        self.numberOfFruit = 2
         self.scoreChange = 0
         self.bonusFruit = None
         self.bonusTime = 0

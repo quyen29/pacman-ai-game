@@ -22,6 +22,7 @@ HEIGHT = 39 * TILE_SIZE
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption("Pac-Man")
 timer = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 24)
 
 # Cấu hình game
 fps = 60
@@ -33,7 +34,7 @@ PI = math.pi
 #Index = 0
 pacman_x = 14 * TILE_SIZE
 pacman_y= 27 * TILE_SIZE
-direction = 0
+direction = "East"
 
 #Index = 1
 blinky_x = 14 * TILE_SIZE
@@ -58,35 +59,56 @@ clyde_direction = 0
 bonusFruit_x = 14 * TILE_SIZE
 bonusFruit_y = 21 * TILE_SIZE
 bonusFruit_img = pygame.transform.scale(pygame.image.load(f'assets/fruit.png'), (20, 20))
+numOfBonusFruit = 2
+bonusFruit_position = [(560, 735), (530, 735)] 
+
+numOfChance = 3
+chance_image = pygame.transform.scale(pygame.image.load(f'assets/pacman_images/1.png'), (20, 20))
+chance_position = [(20, 735), (50, 735), (80, 735)]
+
+score = 0
+score_x = 20
+score_y = 25
 
 counter = 0
 flicker = False
 
 pacman_images = []
-for i in range(1, 5):
-    pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (30, 30)))
+# for i in range(1, 5):
+#     pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (30, 30)))
 
-blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (30, 30))
-pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
-inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
-clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
-scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
-dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (30, 30))
+# blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (30, 30))
+# pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
+# inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
+# clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
+# scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
+# dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (30, 30))
 
 #Sửa kích thước agent thành 20x20
-# for i in range(1, 5):
-#     pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (20, 20)))
+for i in range(1, 5):
+    pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (20, 20)))
 
-# blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (20, 20))
-# pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (20, 20))
-# inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
-# clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
-# scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
-# dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
+blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (20, 20))
+pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (20, 20))
+inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
+clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
+scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (20, 20))
+dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (20, 20))
 
-
+def rotate_pacman(image, direction):
+    from characters.agents import Directions
+    if direction == Directions.EAST:
+        return image
+    elif direction == Directions.WEST:
+        return pygame.transform.flip(image, True, False)
+    elif direction == Directions.NORTH:
+        return pygame.transform.rotate(image, 90)
+    elif direction == Directions.SOUTH:
+        return pygame.transform.rotate(image, -90)
+    return image
 
 def draw_board():
+    global numOfBonusFruit
     for row in range(len(level)):
         for col in range(len(level[row])):
             x = col * TILE_SIZE
@@ -95,10 +117,10 @@ def draw_board():
             if level[row][col] == 1:  # dot nhỏ
                 pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 4)
             elif level[row][col] == 2 and not flicker:  # energizer
-                pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 10)
+                # pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 10)
 
                 #Sửa kích thước energizer thành 8
-                # pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 8)
+                pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 8)
             elif level[row][col] == 3:  # tường dọc
                 pygame.draw.line(screen, color, (x + TILE_SIZE // 2, y), (x + TILE_SIZE // 2, y + TILE_SIZE), 3)
             elif level[row][col] == 4:  # tường ngang
@@ -117,7 +139,9 @@ def draw_board():
                 screen.blit(bonusFruit_img, (bonusFruit_x, bonusFruit_y))
 
 def draw_pacman():
-    screen.blit(pacman_images[counter // 5], (pacman_x, pacman_y))
+    frameIndex = counter // 5
+    rotateImg = rotate_pacman(pacman_images[frameIndex], direction)
+    screen.blit(rotateImg, (pacman_x, pacman_y))
     # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
     # if direction == 0:
     #     screen.blit(pacman_images[counter // 5], (pacman.x, pacman.y))
@@ -133,6 +157,18 @@ def draw_ghosts():
     screen.blit(pinky_img, (pinky_x, pinky_y))
     screen.blit(inky_img, (inky_x, inky_y))
     screen.blit(clyde_img, (clyde_x, clyde_y))
+
+def draw_chance():
+    for i in range(0, numOfChance):
+        screen.blit(chance_image, (chance_position[i][0], chance_position[i][1]))
+
+def draw_fruit():
+    for i in range(0, numOfBonusFruit):
+        screen.blit(bonusFruit_img, (bonusFruit_position[i][0], bonusFruit_position[i][1]))
+
+def draw_score():
+    text_score = font.render(f"Score = {score}", True, (255, 255, 255))
+    screen.blit(text_score, (score_x, score_y))
     
 def runGame():
     from game.logic import ClassicGameRules
@@ -165,6 +201,10 @@ def updatePositionAgent(game):
     global clyde_x, clyde_y
     global level
     global blinky_img, pinky_img, inky_img, clyde_img
+    global direction
+    global numOfChance
+    global numOfBonusFruit
+    global score
     
     #Vẽ pacman
     pacmanState = game.state.data.agentStates[0]
@@ -172,6 +212,7 @@ def updatePositionAgent(game):
     pacman_x = pacmanPos[1] * TILE_SIZE
     pacman_y = (pacmanPos[0] + 3) * TILE_SIZE
     level[pacmanPos[0]][pacmanPos[1]] = 0
+    direction = pacmanState.getDirection()
 
     #Vẽ blinky
     blinkyState = game.state.data.agentStates[1]
@@ -223,6 +264,12 @@ def updatePositionAgent(game):
     if game.state.data.bonusTime == 0:
         level[18][14] = 0
 
+    numOfChance = game.state.data.chance  
+
+    numOfBonusFruit = game.state.data.numberOfFruit
+
+    score = game.state.data.score  
+
 def logicFunction(game):
     if game and not game.gameOver:
         game.run()
@@ -248,6 +295,9 @@ def main():
         draw_board()
         draw_pacman()
         draw_ghosts()
+        draw_chance()
+        draw_fruit()
+        draw_score()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
