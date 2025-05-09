@@ -1,6 +1,6 @@
 from heapq import heappush, heappop
-from characters.agents import Directions, Actions, Agent, GhostModeController
-from ai.utilities import manhattanDistance
+from characters.agents import Directions, Actions, Agent, GhostModeController,Modes
+from ai.utilities import manhattanDistance,GhostSearchProblem
 from ai.search_algorithms import a_star_search
 from game.logic import GhostRules
 import random
@@ -17,13 +17,18 @@ class Pinky(Agent):
         walls = state.getWalls()
         currentPos = tuple(map(int, state.getGhostPosition(self.index)))
         pacmanPos = tuple(map(int, state.getPacmanPosition()))
-        currentDirection = state.getGhostState(self.index).configuration.direction
-        if mode ==GhostModeController.Modes.CHASE:
+        if mode ==Modes.CHASE:
             pacmanDir = state.data.agentStates[0].configuration.direction
             predicted_target = Actions.get_ahead_position(pacmanPos, pacmanDir, 4)
+            x, y = predicted_target
+            if (walls[x][y]==True):
+                i = 3
+                while(walls[x][y]!=True):
+                    predicted_target = Actions.get_ahead_position(pacmanPos, pacmanDir, i)
+                    x, y = predicted_target
             target = predicted_target if manhattanDistance(currentPos, predicted_target) > manhattanDistance(currentPos, pacmanPos) else pacmanPos
 
-        elif mode == GhostModeController.Modes.SCATTER:
+        elif mode == Modes.SCATTER:
             target = self.scatter_corner
 
         else: 
@@ -31,12 +36,19 @@ class Pinky(Agent):
             valid_corners = [c for c in corners if not walls[c[0]][c[1]]]
             target = max(valid_corners, key=lambda c: manhattanDistance(c, pacmanPos)) if valid_corners else currentPos
 
-        path = a_star_search(currentPos, target, walls, currentDirection)
-        if path:
+        problem = GhostSearchProblem(state, target, self.index)
+        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, target))
+        if currentPos == target:
+            legal = state.getLegalActions(self.index)
+            legal = [a for a in legal if a != Directions.STOP]
+            return random.choice(legal) if legal else Directions.STOP
+        elif path:
             next_move = path[0]
             legal = GhostRules.getLegalActions(state, self.index) 
             if next_move not in legal:
-                self.aStar(currentPos, self.scared_target, walls, random.choice(legal))
+                legal = state.getLegalActions(self.index)
+                legal = [a for a in legal if a != Directions.STOP]
+                next_move=random.choice(legal)
             return next_move
 
         legal = state.getLegalActions(self.index)
