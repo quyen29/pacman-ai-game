@@ -64,30 +64,34 @@ class PacmanRules:
         x, y = position
         numFood = state.getNumFood()
         if state.data.food[x][y]:
+            state.data.rateScore += 10
             state.data.scoreChange += 10
             state.data.food = state.data.food.deepCopy()
             state.data.food[x][y] = False
             state.data.foodEaten = position
             if numFood == 0 and not state.data.lose:
-                state.data.scoreChange += 500
+                state.data.rateScore += 500
                 state.data.win = True
 
         if position in state.getEnergizer():
             state.data.energizer.remove(position)
             state.data.energizerEaten = position
             state.data.scoreChange += 50
+            state.data.rateScore += 50
             for i in range(1, len(state.data.agentStates)):
                 state.data.agentStates[i].scaredTimer = SCARED_TIME
             for i in range(0, len(state.data.eaten)):
                 state.data.eaten[i] = False
 
         if (240 - numFood) == 70 or (240 - numFood) == 170:
+            state.data.numberOfFruit -= 1
             state.data.bonusFruit = (21, 14)
             state.data.bonusTime = BONUS_TIME
 
         if state.data.bonusFruit != None:
             #Trường hợp pacman ăn bonus fruit
             if position == state.data.bonusFruit and state.data.bonusTime > 0:
+                state.data.rateScore += 100
                 state.data.scoreChange += 100
                 state.data.bonusFruit = None
                 state.data.bonusTime = 0
@@ -141,8 +145,7 @@ class GhostRules:
     
     @staticmethod
     def applyAction(state, action, ghostIndex):
-        legal = GhostRules.getLegalActions(state, ghostIndex) 
-        print("Hanh dong hop le", legal, "Hanh dong dang xet", action)
+        legal = GhostRules.getLegalActions(state, ghostIndex)
         if action not in legal: 
             raise Exception("Hanh dong khong hop le")
         
@@ -184,17 +187,19 @@ class GhostRules:
                 if agent:
                     countGhostEaten += 1
             print(f"So ghost da an: {countGhostEaten}")
+            state.data.rateScore += ((2 ** countGhostEaten) * 100)
             state.data.scoreChange += ((2 ** countGhostEaten) * 100)
             GhostRules.placeGhost(state, ghostState)
             ghostState.scaredTimer = 0
+            state.data.eaten[agentIndex] = True
         else:
             if state.data.chance == 0:
                 if not state.data.win:
-                    state.data.scoreChange -= 2000
+                    state.data.rateScore -= 2000
                     state.data.lose = True
             else:
                 if not state.data.reset:
-                    state.data.scoreChange -= 2000
+                    state.data.rateScore -= 2000
                     state.data.chance -= 1
                     state.data.reset = True
 

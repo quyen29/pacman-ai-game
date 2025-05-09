@@ -15,7 +15,7 @@ def betterEvaluationFunction(currentGameState):
     foodList = food.asList()
     bonusFruit = currentGameState.data.bonusFruit
     bonusTime = currentGameState.data.bonusTime
-    score = currentGameState.getScore()
+    score = currentGameState.data.rateScore
 
     #Tránh ghost
     for ghost in ghostStates:
