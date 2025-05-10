@@ -9,12 +9,11 @@ class Inky(Agent):
         super().__init__(index)
         self.prng = PRNG(seed=67890)  # Seed riêng để đảm bảo hành vi ngẫu nhiên
         self.scatter_target = (28, 27)  # Góc dưới phải của mê cung
-        self.mode_controller = GhostModeController()
     
     def getAction(self, state: GameState):
         inky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode(inky_state)
+        mode = state.data.mode.get_mode(inky_state)
         pacman_pos = state.getPacmanPosition()
         pacman_direction = state.data.agentStates[0].configuration.direction
         walls = state.getWalls()

@@ -9,12 +9,11 @@ class Blinky(Agent):
         super().__init__(index)
         self.prng = PRNG(seed=42)
         self.scatter_target = (2, 26) # Quay về góc trên phải
-        self.mode_controller = GhostModeController()
 
     def getAction(self, state: GameState):
         blinky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode(blinky_state)
+        mode = state.data.mode.get_mode(blinky_state)
         pacman_pos = state.getPacmanPosition()
 
         walls = state.getWalls()

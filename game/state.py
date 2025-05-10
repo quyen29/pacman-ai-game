@@ -1,6 +1,6 @@
 import copy
 
-from characters.agents import Configuration, Directions
+from characters.agents import Configuration, Directions, GhostModeController
 from game.logic import TIME_PENALTY, GhostRules, PacmanRules
 
 
@@ -63,6 +63,7 @@ class GameStateData:
             self.score = prevState.score  #Là tổng số điểm hiện tại của game
             self.rateScore = prevState.rateScore
             self.chance = prevState.chance
+            self.mode = prevState.mode
         
         self.foodEaten = None  #Là vị trí food đã ăn
         self.energizerEaten = None  #Là vị trí của energizer bị ăn trong lượt hiện tại
@@ -91,6 +92,7 @@ class GameStateData:
         state.scoreChange = self.scoreChange
         state.chance = self.chance
         state.reset = self.reset
+        state.mode = self.mode
         return state
     
     #Tạo bản sao danh sách trạng thái của tất cả các agent
@@ -143,6 +145,7 @@ class GameStateData:
         self.bonusFruit = None
         self.bonusTime = 0
         self.chance = 3
+        self.mode = GhostModeController()
 
         self.agentStates = []
         numGhosts = 0

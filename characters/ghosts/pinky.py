@@ -7,10 +7,9 @@ import random
 class Pinky(Agent):
     def __init__(self, index=2):
         super().__init__(index)
-        self.mode_controller = GhostModeController()
         self.scatter_corner = (2, 2)
     def getAction(self, state):
-        mode = self.mode_controller.get_mode(state.getGhostState(self.index))
+        mode = state.data.mode.get_mode(state.getGhostState(self.index))
         walls = state.getWalls()
         currentPos = tuple(map(int, state.getGhostPosition(self.index)))
         pacmanPos = tuple(map(int, state.getPacmanPosition()))

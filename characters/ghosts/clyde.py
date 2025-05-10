@@ -10,7 +10,6 @@ class Clyde(Agent):
         super().__init__(index)
         self.prng = PRNG(seed=12345)
         self.scatter_target = (28, 2) # Góc dưới trái
-        self.mode_controller = GhostModeController()
     
     def getAction(self, state: GameState):
         legal = state.getLegalActions(self.index)
@@ -19,7 +18,7 @@ class Clyde(Agent):
         pacman_pos = state.getPacmanPosition()
         dist = manhattanDistance(pacman_pos, clyde_pos)
 
-        mode = self.mode_controller.get_mode(clyde_state)
+        mode = state.data.mode.get_mode(clyde_state)
         if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:
             print(f"Blinky Pos: {clyde_state.getPosition()}, Mode: {mode}")
             if legal:

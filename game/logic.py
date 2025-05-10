@@ -82,6 +82,7 @@ class PacmanRules:
                 state.data.agentStates[i].scaredTimer = SCARED_TIME
             for i in range(0, len(state.data.eaten)):
                 state.data.eaten[i] = False
+            state.data.mode.reset()
 
         if (240 - numFood) == 70 or (240 - numFood) == 170:
             state.data.numberOfFruit -= 1
