@@ -38,7 +38,7 @@ class Blinky(Agent):
         
         problem = GhostSearchProblem(state, goal, self.index)
         path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
-        print(f"Blinky Pos: {blinky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
+        print(f"Blinky. Pos: {blinky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Cac hanh dong hop le cua Blinky: {state.getLegalActions(self.index)}")
         print(f"Ke hoach duong di cua Blinky: {path}")
         

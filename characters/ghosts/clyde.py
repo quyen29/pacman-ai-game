@@ -39,9 +39,9 @@ class Clyde(Agent):
         
         problem = GhostSearchProblem(state, goal, self.index)
         path = a_star_search(problem, heuristic=lambda pos, _: self.euclideanDistance(pos, goal))
-        print(f"Clyde Pos: {clyde_state.getPosition()}, Goal: {goal}, Mode: {mode}")
-        print(f"Clyde legal actions: {state.getLegalActions(self.index)}")
-        print(f"Clyde planned path: {path}")
+        print(f"Clyde. Pos: {clyde_state.getPosition()}, Goal: {goal}, Mode: {mode}")
+        print(f"Cac hanh dong hop le cua Clyde: {state.getLegalActions(self.index)}")
+        print(f"Ke hoach duong di cua Clyde: {path}")
         
         if path and path[0] in legal:
             return path[0]
