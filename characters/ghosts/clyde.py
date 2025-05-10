@@ -1,5 +1,5 @@
 from characters.agents import Agent, Directions, Modes, GhostModeController
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
 from ultils.prng import PRNG
@@ -37,7 +37,7 @@ class Clyde(Agent):
             goal = self.scatter_target
         
         problem = GhostSearchProblem(state, goal, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: self.euclideanDistance(pos, goal))
+        path = pacmanASS(problem, heuristic=lambda pos, _: self.euclideanDistance(pos, goal))
         print(f"Clyde. Pos: {clyde_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Cac hanh dong hop le cua Clyde: {state.getLegalActions(self.index)}")
         print(f"Ke hoach duong di cua Clyde: {path}")

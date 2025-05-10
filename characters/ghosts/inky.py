@@ -1,5 +1,5 @@
 from characters.agents import Agent, Directions, Modes, GhostModeController, Actions
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
 from ultils.prng import PRNG
@@ -41,7 +41,7 @@ class Inky(Agent):
         
         # Tìm đường bằng A* search
         problem = GhostSearchProblem(state, goal, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
         
         print(f"Inky Pos: {inky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Inky legal actions: {legal}")

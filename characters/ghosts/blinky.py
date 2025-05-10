@@ -1,5 +1,5 @@
 from characters.agents import Agent, Directions, Layout, Modes, GhostModeController
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
 from ultils.prng import PRNG
@@ -36,7 +36,7 @@ class Blinky(Agent):
             goal = self.scatter_target
         
         problem = GhostSearchProblem(state, goal, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
         print(f"Blinky. Pos: {blinky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Cac hanh dong hop le cua Blinky: {state.getLegalActions(self.index)}")
         print(f"Ke hoach duong di cua Blinky: {path}")

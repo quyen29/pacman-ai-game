@@ -97,27 +97,3 @@ def pacmanASS(problem, heuristic = pacmanNullHeuristic):
                     frontier.push(child, costToGo)
                     explore.push(tempPath, costToGo)
     return []
-
-def a_star_search(problem: SearchProblem, heuristic):
-    frontier = PriorityQueue()
-    start = problem.getStartState()
-    frontier.push((start, [], 0), heuristic(start, problem))
-    visited = set()
-
-    while not frontier.isEmpty():
-        curr_state, path, cost_so_far = frontier.pop()
-
-        if problem.isGoalState(curr_state):
-            return path
-        if curr_state in visited:
-            continue
-        visited.add(curr_state)
-
-        for next_state, action, step_cost in problem.getSuccessors(curr_state):
-            if next_state not in visited:
-                new_path = path + [action]
-                new_cost = cost_so_far + step_cost
-                priority = new_cost + heuristic(next_state, problem)
-                frontier.push((next_state, new_path, new_cost), priority)
-        
-    return []
