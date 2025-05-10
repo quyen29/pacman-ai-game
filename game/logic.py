@@ -136,7 +136,7 @@ class GhostRules:
         reverse = Actions.reverseDirection(config.direction)
 
         ghostPosition = state.getGhostPosition(ghostIndex)
-        if not ghostState.inPen or (ghostState.inPen and ghostState.scaredTime > 0):
+        if not ghostState.inPen or (ghostState.inPen and ghostState.scaredTimer > 0):
             for action in possibleActions:
                 if (ghostPosition + Actions.directionToVector(action)) in [(13, 14), (13, 15)]:
                     possibleActions.remove(action)

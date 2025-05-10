@@ -14,7 +14,7 @@ class Inky(Agent):
     def getAction(self, state: GameState):
         inky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode()
+        mode = self.mode_controller.get_mode(inky_state)
         pacman_pos = state.getPacmanPosition()
         pacman_direction = state.data.agentStates[0].configuration.direction
         walls = state.getWalls()

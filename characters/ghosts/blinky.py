@@ -14,13 +14,13 @@ class Blinky(Agent):
     def getAction(self, state: GameState):
         blinky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode()
-
+        mode = self.mode_controller.get_mode(blinky_state)
         pacman_pos = state.getPacmanPosition()
 
         walls = state.getWalls()
 
-        if blinky_state.scaredTimer > 0:
+        if mode == Modes.FRIGHTENED or blinky_state.scaredTimer > 0:
+            print(f"Blinky Pos: {blinky_state.getPosition()}, Mode: {mode}")
             if legal:
                 return legal[self.prng.next() % len(legal)]
             else:

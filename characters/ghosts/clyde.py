@@ -19,16 +19,19 @@ class Clyde(Agent):
         pacman_pos = state.getPacmanPosition()
         dist = manhattanDistance(pacman_pos, clyde_pos)
 
-        mode = self.mode_controller.get_mode()
+        mode = self.mode_controller.get_mode(clyde_state)
         if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:
+            print(f"Blinky Pos: {clyde_state.getPosition()}, Mode: {mode}")
             if legal:
                 return legal[self.prng.next()% len(legal)]
             else:
                 return Directions.STOP
-        if dist <= 8:
+        if dist <= 8 or mode == Modes.SCATTER:
             goal = self.scatter_target
-        else:
+        elif dist > 8 or mode == Modes.CHASE:
             goal = pacman_pos
+        else:
+            goal = self.scatter_target
 
         walls = state.getWalls()
         if walls[int(goal[0])][int(goal[1])]:

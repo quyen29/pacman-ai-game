@@ -13,7 +13,7 @@ class Pinky(Agent):
         self.scared_path = []
 
     def getAction(self, state):
-        mode = self.mode_controller.get_mode()
+        mode = self.mode_controller.get_mode(state.getGhostState(self.index))
         walls = state.getWalls()
         currentPos = tuple(map(int, state.getGhostPosition(self.index)))
         pacmanPos = tuple(map(int, state.getPacmanPosition()))
