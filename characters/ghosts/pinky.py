@@ -1,16 +1,15 @@
 from heapq import heappush, heappop
 from characters.agents import Directions, Actions, Agent, GhostModeController,Modes
 from ai.utilities import manhattanDistance,GhostSearchProblem
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from game.logic import GhostRules
 import random
 class Pinky(Agent):
     def __init__(self, index=2):
         super().__init__(index)
-        self.mode_controller = GhostModeController()
         self.scatter_corner = (2, 2)
     def getAction(self, state):
-        mode = self.mode_controller.get_mode()
+        mode = state.data.mode.get_mode(state.getGhostState(self.index))
         walls = state.getWalls()
         currentPos = tuple(map(int, state.getGhostPosition(self.index)))
         pacmanPos = tuple(map(int, state.getPacmanPosition()))
@@ -28,7 +27,7 @@ class Pinky(Agent):
             target = max(valid_corners, key=lambda c: manhattanDistance(c, pacmanPos)) if valid_corners else currentPos
 
         problem = GhostSearchProblem(state, target, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, target))
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, target))
         if currentPos == target:
             legal = state.getLegalActions(self.index)
             legal = [a for a in legal if a != Directions.STOP]

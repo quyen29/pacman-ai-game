@@ -1,5 +1,5 @@
 from characters.agents import Agent, Directions, Modes, GhostModeController, Actions
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
 from ultils.prng import PRNG
@@ -9,12 +9,11 @@ class Inky(Agent):
         super().__init__(index)
         self.prng = PRNG(seed=67890)  # Seed riêng để đảm bảo hành vi ngẫu nhiên
         self.scatter_target = (28, 27)  # Góc dưới phải của mê cung
-        self.mode_controller = GhostModeController()
     
     def getAction(self, state: GameState):
         inky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode()
+        mode = state.data.mode.get_mode(inky_state)
         pacman_pos = state.getPacmanPosition()
         pacman_direction = state.data.agentStates[0].configuration.direction
         walls = state.getWalls()
@@ -42,7 +41,7 @@ class Inky(Agent):
         
         # Tìm đường bằng A* search
         problem = GhostSearchProblem(state, goal, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
         
         print(f"Inky Pos: {inky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Inky legal actions: {legal}")

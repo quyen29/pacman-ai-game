@@ -1,5 +1,5 @@
 from characters.agents import Agent, Directions, Layout, Modes, GhostModeController
-from ai.search_algorithms import a_star_search
+from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
 from ultils.prng import PRNG
@@ -9,18 +9,17 @@ class Blinky(Agent):
         super().__init__(index)
         self.prng = PRNG(seed=42)
         self.scatter_target = (2, 26) # Quay về góc trên phải
-        self.mode_controller = GhostModeController()
 
     def getAction(self, state: GameState):
         blinky_state = state.getGhostState(self.index)
         legal = state.getLegalActions(self.index)
-        mode = self.mode_controller.get_mode()
-
+        mode = state.data.mode.get_mode(blinky_state)
         pacman_pos = state.getPacmanPosition()
 
         walls = state.getWalls()
 
-        if blinky_state.scaredTimer > 0:
+        if mode == Modes.FRIGHTENED or blinky_state.scaredTimer > 0:
+            print(f"Blinky Pos: {blinky_state.getPosition()}, Mode: {mode}")
             if legal:
                 return legal[self.prng.next() % len(legal)]
             else:
@@ -37,8 +36,8 @@ class Blinky(Agent):
             goal = self.scatter_target
         
         problem = GhostSearchProblem(state, goal, self.index)
-        path = a_star_search(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
-        print(f"Blinky Pos: {blinky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
+        print(f"Blinky. Pos: {blinky_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Cac hanh dong hop le cua Blinky: {state.getLegalActions(self.index)}")
         print(f"Ke hoach duong di cua Blinky: {path}")
         

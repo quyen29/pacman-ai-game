@@ -575,8 +575,11 @@ class GhostModeController:
                     self.current_mode = mode
                 break
 
-    def get_mode(self):
-        self.update()
+    def get_mode(self, ghostState):
+        if ghostState.scaredTimer > 0:
+            self.current_mode = Modes.FRIGHTENED
+        else:
+            self.update()
         return self.current_mode
     
     def reset(self):
