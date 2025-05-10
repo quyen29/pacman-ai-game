@@ -75,20 +75,20 @@ def pacmanNullHeuristic(static, problem = None):
 def pacmanASS(problem, heuristic = pacmanNullHeuristic):
     frontier = PriorityQueue()
     frontier.push(problem.getStartState(), 0)
-    visited = []
+    visited = set()
     path = []
     explore = PriorityQueue()
     explore.push([], 0)
     while not frontier.isEmpty():
         currState = frontier.pop()
-        if len(explore) > 0:
+        if not explore.isEmpty():
             path = explore.pop()
 
         if problem.isGoalState(currState):
             return path
         
         if currState not in visited:
-            visited.append(currState)
+            visited.add(currState)
             successors = problem.getSuccessors(currState)
             for child, direction, cost in successors:
                 tempPath = path + [direction]
