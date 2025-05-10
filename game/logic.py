@@ -135,6 +135,12 @@ class GhostRules:
         possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, ghostIndex)
         reverse = Actions.reverseDirection(config.direction)
 
+        ghostPosition = state.getGhostPosition(ghostIndex)
+        if not ghostState.inPen or (ghostState.inPen and ghostState.scaredTime > 0):
+            for action in possibleActions:
+                if (ghostPosition + Actions.directionToVector(action)) in [(13, 14), (13, 15)]:
+                    possibleActions.remove(action)
+
         #Ghost bắt buộc phải di chuyển
         if Directions.STOP in possibleActions:
             possibleActions.remove(Directions.STOP)
