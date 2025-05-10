@@ -9,9 +9,6 @@ class Pinky(Agent):
         super().__init__(index)
         self.mode_controller = GhostModeController()
         self.scatter_corner = (2, 2)
-        self.scared_target = None
-        self.scared_path = []
-
     def getAction(self, state):
         mode = self.mode_controller.get_mode(state.getGhostState(self.index))
         walls = state.getWalls()
