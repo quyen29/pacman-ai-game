@@ -69,9 +69,9 @@ class PacmanRules:
             state.data.food = state.data.food.deepCopy()
             state.data.food[x][y] = False
             state.data.foodEaten = position
-            if numFood == 0 and not state.data.lose:
-                state.data.rateScore += 500
-                state.data.win = True
+        if numFood == 0 and not state.data.lose:
+            state.data.rateScore += 500
+            state.data.win = True
 
         if position in state.getEnergizer():
             state.data.energizer.remove(position)
@@ -195,11 +195,11 @@ class GhostRules:
         else:
             if state.data.chance == 0:
                 if not state.data.win:
-                    state.data.rateScore -= 2000
+                    state.data.rateScore -= 3000
                     state.data.lose = True
             else:
                 if not state.data.reset:
-                    state.data.rateScore -= 2000
+                    state.data.rateScore -= 3000
                     state.data.chance -= 1
                     state.data.reset = True
 

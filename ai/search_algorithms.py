@@ -8,7 +8,8 @@ def pacmanDFS(problem):
 
     while not frontier.isEmpty():
         currState = frontier.pop()
-        path = explore.pop()
+        if len(explore) > 0:
+            path = explore.pop()
 
         if problem.isGoalState(currState):
             return path
@@ -24,25 +25,22 @@ def pacmanDFS(problem):
 
 def pacmanBFS(problem):
     frontier = Queue()
-    frontier.push(problem.getStartState())
+    frontier.push((problem.getStartState(), []))
     visited = []
-    path = []
-    explore = []
 
     while not frontier.isEmpty():
-        currState = frontier.pop()
-        path = explore.pop()
+        currState, path = frontier.pop()
 
         if problem.isGoalState(currState):
+            path.append(currState)
             return path
 
         if currState not in visited:
             visited.append(currState)
             successors = problem.getSuccessors(currState)
             for child, direction, cost in successors:
-                frontier.push(child)
-                tempPath = path + [direction]
-                explore.append(tempPath)  #Thêm đường đi mới vào
+                newPath = path + [direction]
+                frontier.push((child, newPath))
     return []
 
 def pacmanUCS(problem):
@@ -53,7 +51,8 @@ def pacmanUCS(problem):
     explore = PriorityQueue()
     while not frontier.isEmpty():
         currState = frontier.pop()
-        path = explore.pop()
+        if len(explore) > 0:
+            path = explore.pop()
 
         if problem.isGoalState(currState):
             return path
@@ -82,7 +81,8 @@ def pacmanASS(problem, heuristic = pacmanNullHeuristic):
     explore.push([], 0)
     while not frontier.isEmpty():
         currState = frontier.pop()
-        path = explore.pop()
+        if len(explore) > 0:
+            path = explore.pop()
 
         if problem.isGoalState(currState):
             return path
