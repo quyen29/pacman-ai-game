@@ -306,6 +306,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     game = runGame()
+                    # game.run()
+                    # updatePositionAgent(game)
             
         if game and not game.gameOver:
             if logicThread is None or not logicThread.is_alive():
