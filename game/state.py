@@ -194,17 +194,6 @@ class GameState:
         self.data.initialize(layout, numGhostAgents)
 
     explore = set()  #Danh sách lưu các trạng thái đã xử lý, tránh xử lý lại
-    @staticmethod
-    def getAndResetExplored():
-        tmp = GameState.explore.copy()
-        GameState.explore = set()
-        return tmp   
-
-    def hasFood(self, x, y):
-        return self.data.food[x][y]
-    
-    def hasWall(self, x, y):
-        return self.data.layout.walls[x][y]
     
     def isWin(self):
         return self.data.win
@@ -250,7 +239,6 @@ class GameState:
         state = GameState(self)
 
         if agentIndex == 0:
-            # state.data.eaten = [False for i in range(0, state.getNumAgents())]
             PacmanRules.applyAction(state, action)
         else:
             GhostRules.applyAction(state, action, agentIndex)

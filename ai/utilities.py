@@ -1,22 +1,6 @@
 import heapq
 from abc import ABC, abstractmethod
 
-class Stack:
-    def __init__(self):
-        self.list = []
-    
-    def push(self, item):
-        self.list.append(item)
-
-    def pop(self):
-        return self.list.pop()  #Xóa và trả về phần tử cuối cùng trong list
-    
-    def isEmpty(self):
-        if len(self.list) == 0:
-            return True
-        else:
-            return False
-
 class Queue:
     def __init__(self):
         self.list = []
@@ -53,15 +37,6 @@ class PriorityQueue:
             return True
         else:
             return False
-    
-#Dùng hàm để tính toán độ ưu tiên
-class PriorityQueueWithFunction(PriorityQueue):
-    def __init__(self, priorityFunction):
-        self.priorityFunction = priorityFunction
-        super().__init__(self)
-    
-    def push(self, item):
-        super().push(self, item, self.priorityFunction(item))
 
 def manhattanDistance(xy1, xy2):
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
