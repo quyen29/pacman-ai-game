@@ -74,17 +74,6 @@ counter = 0
 flicker = False
 
 pacman_images = []
-# for i in range(1, 5):
-#     pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (30, 30)))
-
-# blinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/red.png'), (30, 30))
-# pinky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/pink.png'), (30, 30))
-# inky_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/blue.png'), (30, 30))
-# clyde_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/orange.png'), (30, 30))
-# scared_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/powerup.png'), (30, 30))
-# dead_img = pygame.transform.scale(pygame.image.load(f'assets/ghost_images/dead.png'), (30, 30))
-
-#Sửa kích thước agent thành 20x20
 for i in range(1, 5):
     pacman_images.append(pygame.transform.scale(pygame.image.load(f'assets/pacman_images/{i}.png'), (20, 20)))
 
@@ -117,9 +106,6 @@ def draw_board():
             if level[row][col] == 1:  # dot nhỏ
                 pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 4)
             elif level[row][col] == 2 and not flicker:  # energizer
-                # pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 10)
-
-                #Sửa kích thước energizer thành 8
                 pygame.draw.circle(screen, 'white', (x + TILE_SIZE // 2, y + TILE_SIZE // 2), 8)
             elif level[row][col] == 3:  # tường dọc
                 pygame.draw.line(screen, color, (x + TILE_SIZE // 2, y), (x + TILE_SIZE // 2, y + TILE_SIZE), 3)
@@ -142,15 +128,6 @@ def draw_pacman():
     frameIndex = counter // 5
     rotateImg = rotate_pacman(pacman_images[frameIndex], direction)
     screen.blit(rotateImg, (pacman_x, pacman_y))
-    # 0-RIGHT, 1-LEFT, 2-UP, 3-DOWN
-    # if direction == 0:
-    #     screen.blit(pacman_images[counter // 5], (pacman.x, pacman.y))
-    # elif direction == 1:
-    #     screen.blit(pygame.transform.flip(pacman_images[counter // 5], True, False), (pacman.x, pacman.y))
-    # elif direction == 2:
-    #     screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 90), (pacman.x, pacman.y))
-    # elif direction == 3:
-    #     screen.blit(pygame.transform.rotate(pacman_images[counter // 5], 270), (pacman.x, pacman.y))
 
 def draw_ghosts():
     screen.blit(blinky_img, (blinky_x, blinky_y))
@@ -175,7 +152,7 @@ def runGame():
     layoutText = gameMaze()
     layout = Layout(layoutText)
 
-    pacman = AlphaBetaAgent("betterEvaluationFunction") #Điền đối tượng pacman vào đây (Đối tượng này được tạo từ abstract class Agent trong file agent.py)
+    pacman = AlphaBetaAgent("betterEvaluationFunction") 
 
     blinky = Blinky()
 

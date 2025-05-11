@@ -24,11 +24,14 @@ def betterEvaluationFunction(currentGameState):
         x, y = ghostPositions[ghost]
         problem.setGoal(f"Position,{x},{y}")
         distance = len(pacmanBFS(problem)) - 1
-        if distance <= 8 and ghostStates[ghost].scaredTimer == 0:
+        if distance <= 4 and ghostStates[ghost].scaredTimer == 0:
             score -= 500
             score += distance
-        elif distance <= 16 and ghostStates[ghost].scaredTimer == 0:
+        elif distance <= 8 and ghostStates[ghost].scaredTimer == 0:
             score -= 300
+            score += distance
+        elif distance <= 16 and ghostStates[ghost].scaredTimer == 0:
+            score -= 100
             score += distance
         elif distance > 16 and ghostStates[ghost].scaredTimer == 0:
             score += distance
@@ -275,7 +278,16 @@ class PositionSearchProblem(SearchProblem):
     
     def isGoalState(self, state):
         if self.goal == "Food":
-            return state in self.gameState.getFood().asList()
+            problem = PositionSearchProblem(self.gameState)
+            ghostStates = self.gameState.getGhostStates()
+            for ghost in ghostStates:
+                x, y = ghost.getPosition()
+                if ghost.scaredTimer == 0:
+                    problem.setGoal(f"Position,{x},{y}")
+                    distance = len(pacmanBFS(problem)) - 1
+                    if distance > 8:
+                        return True
+            return False
         elif self.goal == "Energizer":
             return state in self.gameState.getEnergizer()
         elif self.goal == "Ghost":
