@@ -320,13 +320,6 @@ class Game:
         self.agentIndex = self.startingIndex
         self.state = None
         self.initialized = False
-    
-    #Trả về tiến độ của game
-    def getProgress(self):
-        if self.gameOver:
-            return 1.0
-        else:
-            return self.rules.getProgress(self)
 
     #Kết thúc game và trả về lỗi khi có agent gặp lỗi   
     def agentCrash(self, agentIndex, quiet = False):
