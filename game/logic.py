@@ -8,9 +8,6 @@ BONUS_TIME = 40
 TIME_PENALTY = 1
 
 class ClassicGameRules:
-    def __init__(self, timeout = 20):
-        self.timeout = timeout  #Thời gian tối đa để agent đưa ra quyết định, đơn vị là giây
-
     def newGame(self, layout, pacmanAgent, ghostAgents, quiet = False):
         from game.state import GameState
         agents = [pacmanAgent] + ghostAgents[:layout.getNumGhosts()]
