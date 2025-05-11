@@ -39,9 +39,6 @@ class ClassicGameRules:
         if state.isLose():
             self.lose(state, game)
     
-    def getProgress(self, game):
-        return float(game.state.getNumFood()) / self.initialState.getNumFood
-    
     def agentCrash(self, game, agentIndex):
         if agentIndex == 0:
             print("Pacman crashed")
