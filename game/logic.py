@@ -124,9 +124,14 @@ class GhostRules:
         config = state.getGhostState(ghostIndex).configuration
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
+        walls = state.getWalls().deepCopy()
         if ghostState.scaredTimer > 0:
             speed /= 2
-        possibleActions = Actions.getPossibleActions(config, state.data.layout.walls, ghostIndex)
+        if ghostIndex == 3 and (240 - state.getNumFood()) < 30:
+            walls[13][14], walls[13][15] = True, True
+        if ghostIndex == 4 and (240 - state.getNumFood()) < 90:
+            walls[13][14], walls[13][15] = True, True
+        possibleActions = Actions.getPossibleActions(config, walls, ghostIndex)
         reverse = Actions.reverseDirection(config.direction)
 
         ghostPosition = state.getGhostPosition(ghostIndex)
@@ -134,6 +139,7 @@ class GhostRules:
             for action in possibleActions:
                 if (ghostPosition + Actions.directionToVector(action)) in [(13, 14), (13, 15)]:
                     possibleActions.remove(action)
+        
 
         #Ghost bắt buộc phải di chuyển
         if Directions.STOP in possibleActions:

@@ -1,4 +1,4 @@
-from characters.agents import Agent, Directions, Modes, GhostModeController, Actions
+from characters.agents import Agent, Directions, Modes, Actions
 from ai.search_algorithms import pacmanASS
 from ai.utilities import GhostSearchProblem, manhattanDistance
 from game.state import GameState
