@@ -24,10 +24,13 @@ def betterEvaluationFunction(currentGameState):
         x, y = ghostPositions[ghost]
         problem.setGoal(f"Position,{x},{y}")
         distance = len(pacmanBFS(problem)) - 1
-        if distance <= 15 and ghostStates[ghost].scaredTimer == 0:
+        if distance <= 8 and ghostStates[ghost].scaredTimer == 0:
             score -= 500
             score += distance
-        elif distance > 15 and ghostStates[ghost].scaredTimer == 0:
+        elif distance <= 16 and ghostStates[ghost].scaredTimer == 0:
+            score -= 300
+            score += distance
+        elif distance > 16 and ghostStates[ghost].scaredTimer == 0:
             score += distance
 
     if TARGET_ENERGIZER != None:
@@ -47,7 +50,7 @@ def betterEvaluationFunction(currentGameState):
         if ghostStates[TARGET_GHOST[1]].scaredTimer == 0 and currentGameState.data.eaten[TARGET_GHOST[1] + 1] == True:
             score += 100
         else:
-            x, y = TARGET_GHOST
+            x, y = TARGET_GHOST[0]
             problem.setGoal(f"Position,{x},{y}")
             distanceGhostScared = len(pacmanBFS(problem)) - 1
             score -= distanceGhostScared
@@ -93,7 +96,7 @@ class MultiAgent(Agent):
         """
 
 class AlphaBetaAgent(MultiAgent):
-    def __init__(self, evaluationFunction = "scoreEvaluationFunction", depth = "2"):
+    def __init__(self, evaluationFunction = "scoreEvaluationFunction", depth = "1"):
         super().__init__(evaluationFunction, depth)
     
     def getAction(self, gameState):
@@ -224,10 +227,28 @@ class AlphaBetaAgent(MultiAgent):
 
         print(f"Energizer: {TARGET_ENERGIZER}\nFood: {TARGET_FOOD}\nGhost: {TARGET_GHOST}\n")
 
+        if len(PACMAN_STAYED) > 6:
+            currPosition = PACMAN_STAYED[-6:]
+            if len(set(currPosition)) == 2:
+                print("LOOP")
+                currDirection = gameState.getPacmanState().getDirection()
+                if currDirection in actions:
+                    nextState = gameState.generateSuccessor(0, currDirection)
+                    PACMAN_STAYED.append(nextState.getPacmanPosition())
+                    return currDirection
+                else:
+                    reverseAction = Actions.reverseDirection(currDirection)
+                    actions.remove(reverseAction)
+                    if len(actions) == 0:
+                        return reverseAction
+                    else:
+                        return actions[0]
+
         for action in actions:
             nextState = gameState.generateSuccessor(0, action)  #Tạo trạng thái tiếp theo của toàn bộ game sau khi pacman thực hiện hành động action
             score = minLevel(nextState, 0, 1, alpha, beta)  #Sau khi pacman hành động phải xem ghost hành động như thế nào
             stateWithAction[action] = nextState
+
             print(f"Hanh dong: {action}, Diem: {score}")
             if score > currScore:
                 returnAction = action

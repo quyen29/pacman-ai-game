@@ -16,7 +16,11 @@ class Pinky(Agent):
         if mode ==Modes.CHASE:
             pacmanDir = state.data.agentStates[0].configuration.direction
             predicted_target = Actions.get_ahead_position(pacmanPos, pacmanDir, 4)
-            target = predicted_target if manhattanDistance(currentPos, predicted_target) > manhattanDistance(currentPos, pacmanPos) else pacmanPos
+            x, y = predicted_target
+            if (walls[x][y]==True):
+                target = pacmanPos
+            else:
+                target = predicted_target
 
         elif mode == Modes.SCATTER:
             target = self.scatter_corner
