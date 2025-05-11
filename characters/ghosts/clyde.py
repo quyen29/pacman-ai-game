@@ -17,6 +17,9 @@ class Clyde(Agent):
         clyde_pos = clyde_state.getPosition()
         pacman_pos = state.getPacmanPosition()
         dist = manhattanDistance(pacman_pos, clyde_pos)
+        
+        if (240 - state.getNumFood()) < 90:
+            return Directions.STOP
 
         mode = state.data.mode.get_mode(clyde_state)
         if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:

@@ -17,6 +17,9 @@ class Inky(Agent):
         pacman_pos = state.getPacmanPosition()
         pacman_direction = state.data.agentStates[0].configuration.direction
         walls = state.getWalls()
+
+        if (240 - state.getNumFood()) < 30:
+            return Directions.STOP
         
         # Chế độ sợ hãi (Frightened) hoặc khi scaredTimer > 0
         if inky_state.scaredTimer > 0 or mode == Modes.FRIGHTENED:
