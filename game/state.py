@@ -239,7 +239,6 @@ class GameState:
         state = GameState(self)
 
         if agentIndex == 0:
-            # state.data.eaten = [False for i in range(0, state.getNumAgents())]
             PacmanRules.applyAction(state, action)
         else:
             GhostRules.applyAction(state, action, agentIndex)
