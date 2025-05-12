@@ -20,9 +20,9 @@ class Clyde(Agent):
 
         mode = state.data.mode.get_mode(clyde_state)
         if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:
-            print(f"Blinky Pos: {clyde_state.getPosition()}, Mode: {mode}")
+            print(f"Clyde. Pos: {clyde_state.getPosition()}, Mode: {mode}")
             if legal:
-                return legal[self.prng.next()% len(legal)]
+                return legal[self.prng.next() % len(legal)]
             else:
                 return Directions.STOP
         if dist <= 8 or mode == Modes.SCATTER:
