@@ -392,9 +392,8 @@ class GhostModeController:
         for i, (mode, duration) in enumerate(self.mode_times):
             total += duration
             if elapsed < total:
-                if self.current_index != i:
-                    self.current_index = i
-                    self.current_mode = mode
+                self.current_index = i
+                self.current_mode = mode
                 break
 
     def get_mode(self, ghostState):
@@ -402,6 +401,8 @@ class GhostModeController:
             self.current_mode = Modes.FRIGHTENED
         else:
             self.update()
+        with open("log.txt", 'a') as f:
+            f.write(f"Scared timer: {ghostState.scaredTimer}. Mode: {self.current_mode}\n")
         return self.current_mode
     
     def reset(self):
