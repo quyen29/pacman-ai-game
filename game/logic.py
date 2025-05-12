@@ -167,7 +167,12 @@ class GhostRules:
         ghostState = state.data.agentStates[ghostIndex]
         timer = ghostState.scaredTimer
         if timer == 1:
-            ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
+            walls = state.getWalls().asList()
+            if ghostIndex == 3 and (240 - state.getNumFood()) < 30:
+                walls[13][14], walls[13][15] = True, True
+            if ghostIndex == 4 and (240 - state.getNumFood()) < 90:
+                walls[13][14], walls[13][15] = True, True
+            ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos, walls)
         ghostState.scaredTimer = max(0, timer - 1)
 
     @staticmethod
