@@ -241,7 +241,7 @@ def updatePositionAgent(game):
     if game.state.data.bonusTime == 0:
         level[18][14] = 0
 
-    numOfChance = game.state.data.chance + 1
+    numOfChance = game.state.data.chance
 
     numOfBonusFruit = game.state.data.numberOfFruit
 
@@ -255,6 +255,7 @@ def logicFunction(game):
 def main():
     global counter
     global flicker
+    global numOfChance
     run = True
     game = None
     logicThread = None
@@ -283,6 +284,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     game = runGame()
+                    numOfChance -= 1
+                    draw_chance()
                     # game.run()
                     # updatePositionAgent(game)
             
