@@ -167,9 +167,6 @@ class GhostRules:
         ghostState = state.data.agentStates[ghostIndex]
         timer = ghostState.scaredTimer
         if timer == 1:
-            ghostPosition = ghostState.getPosition()
-            
-
             ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
         ghostState.scaredTimer = max(0, timer - 1)
 
