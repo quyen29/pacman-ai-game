@@ -1,3 +1,5 @@
+import random
+
 from ai.utilities import manhattanDistance, SearchProblem
 from ai.search_algorithms import pacmanBFS
 from characters.agents import Agent, Directions, Actions
@@ -322,7 +324,7 @@ class AlphaBetaAgent(MultiAgent):
                 TARGET_GHOST = None
 
         print(f"Energizer: {TARGET_ENERGIZER}\nFood: {TARGET_FOOD}\nGhost: {TARGET_GHOST}\n")
-
+        random.shuffle(actions)
         for action in actions:
             nextState = gameState.generateSuccessor(0, action)  #Tạo trạng thái tiếp theo của toàn bộ game sau khi pacman thực hiện hành động action
             score = minLevel(nextState, 0, 1, alpha, beta)  #Sau khi pacman hành động phải xem ghost hành động như thế nào
