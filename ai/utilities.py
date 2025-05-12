@@ -41,13 +41,11 @@ class PriorityQueue:
 def manhattanDistance(xy1, xy2):
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
 
-def nearestPoint(pos):
+def nearestPoint(pos, walls):
     nearRow = int(pos[0] + 0.5)
     nearCol = int(pos[1] + 0.5)
     position = (nearRow, nearCol)
-    if position not in [(4, 4), (4, 5), (4, 9), (4, 10), (4, 11), (4, 18), (4, 19), (4, 20), (4, 24), (4, 25), 
-                        (12, 0), (12, 1), (12, 2), (12, 3), (12, 4), (12, 25), (12, 26), (12, 27), (12, 28), (12, 29), 
-                        (18, 0), (18, 1), (18, 2), (18, 3), (18, 4), (18, 25), (18, 26), (18, 27), (18, 28), (18, 29)]:
+    if position not in walls:
         return (nearRow, nearCol)
     else:
         nearRow = int(pos[0])
