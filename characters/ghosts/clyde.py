@@ -16,7 +16,7 @@ class Clyde(Agent):
         clyde_state = state.getGhostState(self.index)
         clyde_pos = clyde_state.getPosition()
         pacman_pos = state.getPacmanPosition()
-        dist = manhattanDistance(pacman_pos, clyde_pos)
+        dist = self.euclideanDistance(pacman_pos, clyde_pos)
 
         mode = state.data.mode.get_mode(clyde_state)
         if mode == Modes.FRIGHTENED or clyde_state.scaredTimer > 0:
@@ -37,7 +37,7 @@ class Clyde(Agent):
             goal = self.scatter_target
         
         problem = GhostSearchProblem(state, goal, self.index)
-        path = pacmanASS(problem, heuristic=lambda pos, _: self.euclideanDistance(pos, goal))
+        path = pacmanASS(problem, heuristic=lambda pos, _: manhattanDistance(pos, goal))
         print(f"Clyde. Pos: {clyde_state.getPosition()}, Goal: {goal}, Mode: {mode}")
         print(f"Cac hanh dong hop le cua Clyde: {state.getLegalActions(self.index)}")
         print(f"Ke hoach duong di cua Clyde: {path}")
