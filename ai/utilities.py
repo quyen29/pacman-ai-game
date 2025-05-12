@@ -50,8 +50,8 @@ def nearestPoint(pos):
                         (18, 0), (18, 1), (18, 2), (18, 3), (18, 4), (18, 25), (18, 26), (18, 27), (18, 28), (18, 29)]:
         return (nearRow, nearCol)
     else:
-        nearRow = int(pos[0] + 0.5)
-        nearCol = int(pos[1] + 0.5)
+        nearRow = int(pos[0])
+        nearCol = int(pos[1])
         return (nearRow, nearCol)
 
 class SearchProblem(ABC):
