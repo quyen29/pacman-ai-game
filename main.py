@@ -241,7 +241,7 @@ def updatePositionAgent(game):
     if game.state.data.bonusTime == 0:
         level[18][14] = 0
 
-    numOfChance = game.state.data.chance  
+    numOfChance = game.state.data.chance + 1
 
     numOfBonusFruit = game.state.data.numberOfFruit
 

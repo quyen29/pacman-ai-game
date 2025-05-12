@@ -144,7 +144,7 @@ class GameStateData:
         self.scoreChange = 0
         self.bonusFruit = None
         self.bonusTime = 0
-        self.chance = 3
+        self.chance = 2
         self.mode = GhostModeController()
 
         self.agentStates = []
