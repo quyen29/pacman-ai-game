@@ -256,7 +256,7 @@ def main():
     global counter
     global flicker
     run = True
-    game = None
+    game = runGame()
     logicThread = None
     while run:
         timer.tick(fps)
@@ -282,14 +282,14 @@ def main():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    game = runGame()
-                    # game.run()
-                    # updatePositionAgent(game)
+                    # game = runGame()
+                    game.run()
+                    updatePositionAgent(game)
             
-        if game and not game.gameOver:
-            if logicThread is None or not logicThread.is_alive():
-                logicThread = threading.Thread(target = logicFunction, args = (game,))
-                logicThread.start()
+        # if game and not game.gameOver:
+        #     if logicThread is None or not logicThread.is_alive():
+        #         logicThread = threading.Thread(target = logicFunction, args = (game,))
+        #         logicThread.start()
 
         pygame.display.flip()
     pygame.quit()
